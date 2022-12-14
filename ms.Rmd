@@ -1,0 +1,811 @@
+---
+title             : "An automated classifier for child-directed speech from LENA recordings"
+shorttitle        : "Child-directed speech classifier"
+
+author: 
+  - name          : "Janet Bang"
+    affiliation   : "1,2"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Postal address"
+    email         : "my@email.com"
+    role:         # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - Conceptualization
+      - Writing - Original Draft Preparation
+      - Writing - Review & Editing
+  - name          : "George Kachergis"
+    affiliation   : "1"
+  - name          : "Adriana Weisleder"
+    affiliation   : "1"
+    role:
+      - Writing - Review & Editing
+  - name          : "Virginia Marchman"
+    affiliation   : "1"
+    role:
+      - Conceptualization
+      - Writing - Review & Editing
+
+affiliation:
+  - id            : "1"
+    institution   : "Stanford University"
+  - id            : "2"
+    institution   : "San Jose State University"
+
+authornote: |
+  Add complete departmental affiliations for each author here. Each new line herein must be indented, like this line.
+
+  Enter author note here.
+
+abstract: |
+  Recent advances in recording technology have provided unique opportunities to observe children’s everyday speech environments using daylong audio recordings. 
+  A growing number of studies have proposed that speech may support learning differently when speech is directed to  a child (target child directed speech, tCDS) than when that speech is directed to others (ODS) (Shneidman & Goldin-Meadow, 2012; Weisleder & Fernald, 2013). 
+  To identify  periods of tCDS, researchers typically rely on the time-consuming and laborious work of human listeners who must consider numerous features to distinguish periods of tCDS from ODS. 
+  Human listeners are also used to identify periods when children are sleeping or awake. 
+  In this paper, we detail our efforts to automate this process. 
+  We analyzed over 1,000 daylong recording hours from 153 English- and Spanish-speaking families in the U.S. with 17- to 28-month-old children that had been previously coded for periods of sleep, tCDS, and ODS. 
+  We first conducted analyses to explore patterns of features that characterized periods of sleep, tCDS, or ODS periods. 
+  Then, we evaluated two automated classifiers to identify periods of (1) sleep, and (2) tCDS versus ODS. 
+  Classifiers were trained using automated measures generated from LENA, including speech frequency (AWC, CTC, CVC) and duration measures (meaningful speech, distant speech, TV, noise, silence). 
+  Results revealed high sensitivity and specificity in classifying periods of sleep, and moderate sensitivity and specificity in classifying periods of tCDS and ODS. 
+  In addition, model-derived predictions from our tCDS/ODS classifier yielded similar patterns of correlations as previously-published findings, with variation in tCDS, but not ODS, positively linked to children’s later vocabularies (Weisleder & Fernald, 2013). 
+  This work offers promising tools for streamlining work with daylong recordings, thereby facilitating research that aims to better understand how children learn from their everyday speech environments.
+  
+keywords          : "Individual differences, Language input, Parent-child interaction"
+wordcount         : "X"
+
+bibliography      : ["r-references.bib"]
+
+floatsintext      : yes
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+linenumbers       : yes
+mask              : no
+draft             : no
+
+documentclass     : "apa6"
+classoption       : "man"
+output            : papaja::apa6_pdf
+---
+
+```{r setup, include = FALSE}
+library(papaja)
+library(tidyverse)
+library(here)
+library(NbClust)
+library(e1071)
+library(MASS)
+#library(relaimpo)
+library(DiagrammeR)
+library(data.table)
+library(rpart)
+library(rpart.plot)
+library(caret)
+library(xgboost)
+library(pROC)
+#library(xgboostExplainer)
+library(randomForest)
+library(ggpubr)
+
+r_refs("r-references.bib")
+```
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed, warning = F)
+```
+
+# Introduction
+
+Speech environments vary across children in numerous ways. 
+The ability to document variation in children’s naturally-occurring speech  environments has been greatly assisted by technology that can capture, store, and process large amounts of audio data (e.g., an entire day). 
+One notable example is the LENA digital language processor and software system (Gilkerson et al., 2017). 
+The recorder is worn inside a child’s front shirt pocket and each recording stores up to 16 hours of the audio environment around the child. 
+The LENA software automatically segments and classifies the audio recording into relevant categories (e.g., silence, speech, television) and estimates the number of adult words spoken near and clear to the child (Adult Word Count, AWC), as well as the number of child vocalizations (Child Vocalization Count, CVC) and conversational turns (Conversational Turn Count, CTC). 
+To date, studies using LENA recordings have been conducted in numerous languages, as well as across a variety of sociocultural settings (for a systematic review of validation studies see Cristia et al., 2020).
+
+While the automated counts provided by LENA are very useful, these measures gloss over many important features of audio environments. 
+For example, it is not possible to know from the LENA automated counts if silence represents periods when the child is sleeping, or if the child is awake but no speech is addressed to them. 
+Automatic estimates of AWC include all adult speech that is spoken near to the child, but does not distinguish between speech that is directed to the child versus speech that is addressed to other adults or children. 
+The fact that automated estimates of AWC do not specifically reflect the child-directed nature of speech has received particular attention. 
+A growing body of work has proposed that child-directed speech, more so than other-directed speech, supports lexical development (Ramírez-Esparza et al., 2014; Shneidman & Goldin-Meadow, 2012; Weisleder & Fernald, 2013) and that a child-directed register is characterized by certain acoustic and prosodic properties that may be particularly conducive to learning (Fernald et al., 1989; Singh et al., 2009; Soderstrom, 2007; Stärk et al., 2022, 2022). 
+There is therefore growing interest in identifying periods of child-directed speech within daylong recordings. 
+This paper presents an automated, open-source classifier with the potential to facilitate this process.
+
+## Child-directed versus other-directed speech
+
+The construct of child-directed speech is central to theories that aim to explain how children learn language from social interactions (Csibra & Gergely, 2009; Tomasello, 1995). 
+However, some communities vary widely in how much speech is directed to children (Casillas et al., 2019; Ochs & Schieffelin, 1984; Shneidman & Goldin-Meadow, 2012) and how much speech is spoken around the child, but not directed to them. 
+Despite this variability, cross-cultural work finds that key language milestones (e.g., onset of first words and multi-word utterances) emerge around the same age in a variety of communities (Casillas et al., 2019; Crago et al., 1997). 
+Such findings raise questions regarding how speech in children’s environments that may be overheard (i.e., not explicitly directed at them) can also support their language acquisition. 
+
+Indeed, lab-based experimental studies have demonstrated that children can learn new words from speech that is not explicitly directed to them. 
+For example, Akhtar and colleagues (2001 (2001) found that 1- to 2-year-old children were able to learn novel nouns and verbs when observing two adults play a game. 
+Other studies varied the degree of joint attention between speaker and learner, such as having speakers turn their backs to infants during a word learning episode, replicating the finding that children can learn new words even in contexts when speech is not directed to them (Gampe et al., 2012). 
+In contrast, research examining speech in natural environments reports that child-directed speech, more so than other-directed speech, is associated with children’s vocabulary development. 
+For example, using LENA recordings with 29 Spanish-speaking families in the U.S., Weisleder and Fernald (2013) recorded speech environments and then hand-coded periods of child-directed speech, when speech was directed to the target child in one-on-one interactions or with others, or overheard speech, when speech was directed to other adults or children other than the target child. 
+Using AWCs from LENA, they found that the number of adult words in periods with target-child-directed speech at 19 months was related to children’s vocabulary size at 25 months, while the number of adult words in periods with other-directed speech was not. 
+Similar findings were observed in Shneidman and Goldin-Meadow (2012), where the amount of child-directed, but not overheard, speech was associated with vocabulary skills in Yucatec-Mayan-speaking families in subsistence farming communities in Mexico. 
+Vocabulary was measured using receptive and expressive vocabulary tasks that were adapted for Mayan speakers. 
+Collectively, these studies reveal mixed findings about the differential roles of child-directed and overheard speech in young children’s language learning. 
+
+Another observation about child-directed speech is that, when caregivers engage with young children, they may change their speech register, producing a type of speech colloquially referred to as “baby talk” or “parentese”.
+Numerous acoustic, prosodic, phonological, lexical, grammatical, and pragmatic features have been noted to differentiate child-directed versus adult-directed registers (Hilton et al., 2020; Soderstrom, 2007). 
+Moreover, speech that is characterized by some child-directed speech features has been suggested to support children’s speech and language acquisition (Byers-Heinlein et al., 2021; Fernald et al., 1989; Singh et al., 2009; Snow, 1977). 
+For example, a recent multi-continent collaboration demonstrated that speech characterized by the acoustic and phonological features of North American English CDS register attracts the attention of both mono- and bilingually-exposed infants more so than speech spoken in an adult-directed register. 
+These results were interpreted to suggest  that  acoustic features associated with the child-directed speech register may be more effective at attracting infants’ attention and thereby, can better support learning (Byers-Heinlein et al., 2021). 
+However, there is continued debate about the role of child- and adult-directed speech in children’s language learning across linguistic and cultural contexts (Solomon, 2011; Cox et al., 2022). 
+
+## Identifying periods of sleep, target- and other-directed speech in daylong recordings
+
+Daylong recordings, such as those enabled by the LENA recording technology, provide an extraordinary opportunity to examine variation in the features of target-child-directed and other-directed speech in children’s natural environments. To examine this variation, it is first necessary to identify periods during the recording which are characterized by each type of speech. 
+
+In studies to date, human listeners are trained to identify periods of sleep, child-directed, and other-directed speech by attending to numerous cues that are available on the audio recording. 
+However, less is known about which of the multiple available features most reliably characterize these different periods. 
+Moreover, while fruitful, these efforts are highly labor and time intensive. 
+Though there are emerging tools to support the rigor and efficiency of this type of manual coding (Cychosz et al., 2021; Mendoza & Fausey, 2021), efforts to create automated tools are also in critical need. 
+Additionally, in some cases, ethical considerations prevent researchers from listening to the recordings (Cychosz et al., 2020). 
+Thus, tools that enable classification of periods of child-directed and other-directed speech from features that are automatically extracted from the recordings could expand the range of cases in which such features can be examined.
+
+LENA provides automated measures that characterize the child’s audio environment (Xu et al., 2009), including speech frequency measures of adult word counts (AWC), child vocalizations, and conversational turns between adults and the target child, and several time-based estimates of noise, silence, distant speech (i.e., duration of speech far from the target child or overlapping), meaningful speech (i.e., duration of speech that is near and clear to the child), and electronic media (e.g., TV). Speech frequency measures of AWC, CTC, and CVC are all calculated from speech that LENA classifies as “meaningful,” i.e., speech that is near and clear to the child. 
+All vocalization counts include speech-like vocalizations, but exclude respiratory (e.g., breathing) and digestive sounds (e.g., burping). 
+Moreover, each vocalization is counted toward speaker types (e.g., adult female, adult male, target child, non-target child) whenever speech is separated by a 300 ms break. 
+One vocalization may consist of single or multiple words. Conversational turns are defined as a sequence of alternating child-to-adult or adult-to-child vocalizations that are separated by no more than 5 seconds. 
+To derive estimates of AWC, CVC, and CTC during day long recordings, it is often standard practice to normalize across recordings of different lengths to obtain a rate over some unit time, e.g., AWC/hour. 
+In this computation, it may also be appropriate to remove segments of the recording when the child is not available to listen to that speech, for example, when the child is sleeping. 
+
+Figure 1 illustrates examples from three children’s daylong recordings (Weisleder & Fernald, 2013), illustrating the automated AWC estimates per 5-min audio segments across the day. 
+For each segment, human listeners judged whether the child was sleeping and whether the adult speech was primarily tCDS or ODS. 
+Notably, coding revealed that segments with a range of both high and low AWC values could be identified as tCDS and ODS.
+
+(insert Figure 1 about here)
+
+Typically, these automated speech measures are evaluated independently, ranking individual families as having higher vs. lower mean AWCs or CTCs, or ranking children as having higher vs. lower CVCs. 
+However, it is also possible to use these measures in conjunction to distinguish more subtle differences among periods of time during the daylong recordings. 
+For example, for a given 5-minute segment, estimates of AWC may be more likely to be tCDS when accompanied by relatively high values of CTC or CVC. 
+Or, a child is more likely to be sleeping when low values of AWC are also accompanied by low values of CVC or CTC. 
+Finally, segments with relatively more minutes of distant speech may be more likely to be ODS than segments with more minutes of meaningful speech. By combining these measures in various ways, we can gain insights into which features characterize periods of tCDS and ODS in a child’s environment and how best to identify them automatically. 
+
+# Current study
+
+In this paper, we present new tools that facilitate the identification of target-child-directed vs. other-directed speech in day-long LENA recordings, as well as periods when children are awake versus sleeping. 
+We first examined ways to combine the frequency count measures from LENA, i.e., AWC, CTC and CVC, derived from recordings of 29 Spanish-speaking families (Weisleder & Fernald, 2013). 
+We assessed the degree to which variation in these measures was associated with whether a particular 5-minute segment was classified as tCDS or ODS by human coders. 
+Next, we applied more sophisticated machine-learning classifiers that combined multiple frequency- and time-based measures from LENA to identify periods of sleep, tCDS, and ODS. 
+We first used cluster analyses to examine how multiple LENA features hang together to predict the judgements of human listeners. 
+We then trained a sleep classifier and a tCDS/ODS classifier, comparing the results of both classifiers to human coders in a large sample of 153 English- and Spanish-speaking families. 
+Finally, we examined if AWC values based on model-predicted segments of tCDS versus ODS replicated previously published links with children’s later language outcomes (Weisleder & Fernald, 2013).
+
+In this work, we focus on the directed nature of speech to target children (i.e., those who are wearing the recorder) within the context of proximal available speech to the child. 
+For English- and Spanish-speaking male and female caregivers living in the United States, speech directed to the target child may include features characteristic of a CDS register (Ferjan Ramirez et al., 2022), but this was not a requisite feature for our goals. 
+We instead aim to identify speech directed to the child during one-on-one interactions or in multi-party interactions inclusive of the target child which may or may not conform to a CDS register. 
+In doing so, we align our research questions with theoretical proposals that children learn language through meaningful interactions, and particularly through language input that is contingent on or relevant to the child’s vocalizations, actions, and/or attentional focus (Goldstein & Schwade, 2008; McGillion et al., 2013; Tamis-LeMonda et al., 2014; Tomasello, 1995; Yurovsky, 2018), which is more likely to take place in interactions that include the target child as a participant.
+
+
+# Method
+
+We analyzed daylong LENA recordings across five samples from a total of 153 families with 17- to 28-month-old children. 
+For all samples, human listeners had coded 5-min or 10-min audio segments for periods of sleep, tCDS, or ODS following similar protocols. 
+We first conducted a logistic regression to assess relations among AWC, CTC, and CVC in a preliminary sample of n = 29 families (Weisleder & Fernald, 2013). 
+Next, including data from all 153 families across the five samples, we then conducted a cluster analysis and trained automated classifiers using the hand-coded segments and LENA-derived measures, including features of speech (AWC, CTC, CVC) and features based on time (meaningful speech, distant speech, TV, noise, and silence). 
+
+(G copied from Google doc up to here)
+
+```{r, load-data, echo=F}
+load("../data/combined_data_5min.Rdata")
+
+d_allfeat <- d
+
+# Remove fat_ed and mom_ed
+#d$time = NULL
+#d$fat_ed = NULL
+#d$mom_ed = NULL
+
+# could get CDS predictions for all of CONTX..
+all_contx <- read_csv(file="../data/allCONTX_wNaps.csv") %>% 
+  filter(Sleep==0) 
+# but we're missing some columns: noise_min, silence_min, meaningful_min, distant_min, tv_min, hi
+
+Nclass = table(d$cds_ohs) 
+#    0     1 split 
+# 3519  5272  1017 
+propCDS = Nclass["1"] / sum(Nclass)
+Nsubj = length(unique(d$id)) # 153 participants
+
+```
+
+
+
+## Participants
+
+There are `r nrow(d)` datapoints from `r Nsubj` participants (29 Spanish-speaking families from Weisleder & Fernald, 45 English-speaking and 45 Spanish-speaking families from CONTX, 27 full-day recordings of English-speaking 18-month-olds from SOT Stanford, and 29 Spanish-speaking 18-month-olds from SOT Outreach.
+The table below shows per dataset the number of segments of each type and participants. 
+Note that the total number of participants is 175 because 22 participants from CONTX were also included in SOT Outreach (at a different age?).
+
+Individual participants contributed a median of `r median(table(d$id))` segments, but the distribution is somewhat skewed: `r length(which(table(d$id)<50))` contributed fewer than 50 segments. 
+The many participants with few segments are largely from the CONTX dataset, in which participants' segments were sorted in order of decreasing AWC, and segments were only annotated until 6 10-minute segments of primarily child-directed speech (CDS) were found.
+
+```{r, data-per-subject, caption="Number of 5-minute segments and participants (N) per dataset."}
+# width=3.5, height=3.0,
+#hist(sort(table(d$id)), ylab="# of Participants", xlab="# of Segments", main="")
+dataset_tab <- table(d$Dataset, d$cds_ohs)
+dataset_tab <- cbind(dataset_tab, rowSums(dataset_tab))
+
+dataset_subj <- d %>% distinct(Dataset,id) %>% 
+  group_by(Dataset) %>% summarise(N=n())
+
+dataset_tab <- cbind(dataset_tab, dataset_subj$N)
+colnames(dataset_tab) = c("ODS","CDS","Nap","Split","Total","N")
+
+dataset_tab <- rbind(dataset_tab, colSums(dataset_tab))
+rownames(dataset_tab)[5] = "Total"
+# Note: length(unique(d$id)) shows 153 subject IDs, but per dataset we have 175 -- 22 repeat IDs, actually the same kids, or recycled IDs?
+knitr::kable(dataset_tab)
+```
+
+Note: CONTX actually has a much lower ratio of CDS:ODS than the other datasets, but naively we would expect it should have more CDS since the densest hour is annotated first. 
+A few possible explanations: 1) there is actually a lot of ODS in the highest-AWC segments, 2) the RAs threshold for CDS was somewhat higher in CONTX, or 3) CDS comes in short bursts (<3 mins?), meaning that there are a lot 10-min chunks that have 2-3 mins of CDS but are primarily ODS. 
+When we do reliability on a chunk of CONTX (say, 100 10-min segments, as 5-min segments), if we see a disproportionate number of the 10-min segments split into 1 CDS and 1 ODS, then explanation 3 seems likely.
+
+## Material
+
+## Procedure
+
+## Data analysis
+
+<!-- We used `r cite_r("r-references.bib")` for all our analyses. -->
+
+<!-- All of the segments were first normalized -->
+The table below simply shows the average LENA values for each 5-minute segment, split by the class. 
+These averages show largely distinct profiles for the 1,879 nap segments, with low mean values of CVC (1.28), CTC (0.29), AWC (13.11), and meaningful (0.12), and high values of silence (3.49) and TV (0.66) as compared to all other segment types.
+However, the differences between OHS, CDS, and split segments are less clear: although CDS has the highest mean values of CVC (20.94) and CTC (6.61), it also has higher mean silence and noise than the other types, and intermediate values of other variables: OHS segments have higher AWC (153.81) and split segments have nearly as high CVC (15.42) and CTC (4.80).
+At a glance, it seems as though the raw LENA values may not offer us a simple way to separate CDS, OHS, and split segments.
+Before constructing and training a more sophisticated classifier to identify child-directed speech, we first look in greater detail at how the speech segments cluster in this dataset.
+
+```{r, echo=F}
+overall_stats = d %>% 
+  mutate(Type = case_when(
+    cds_ohs=="0" ~ "Overheard Speech",
+    cds_ohs=="1" ~ "Child-directed Speech",
+    cds_ohs=='nap' ~ "Napping",
+    cds_ohs=='split' ~ "Split CDS/OHS",
+    TRUE ~ NA_character_,
+  )) %>%
+  group_by(Type) %>% 
+  summarise(CVC=mean(CVC), 
+            CTC=mean(CTC), 
+            AWC=mean(AWC), 
+            distant=mean(distant_min), 
+            noise=mean(noise_min), 
+            meaningful=mean(meaningful_min),
+            tv=mean(tv_min),
+            silence=mean(silence_min), N=n()) %>% 
+  arrange(CVC)
+#knitr::kable(overall_stats, digits=2, caption= "Means for LENA variables by category.")
+apa_table(overall_stats, digits = 2, caption= "Means for LENA variables by category.")
+```
+
+
+## Clustering Speech Segments
+
+We first cluster the `r Nclass['1']` segments that are labeled as child-directed speech, applying the k-means clustering algorithm for $k=\{2,..,15\}$  clusters.
+We separately do the same for all `r nrow(d)-Nclass['1']` segments that are not pure CDS (naps, overheard, and split segments).
+Based on the weighted sum of squares vs. $k$ plots below, we choose $k=5$ for both the child-directed speech and for the non-CDS data.
+
+```{r, cluster-cds, echo=F, caption="Weighted sum of squares vs. number of clusters."}
+source("../two-class.R")
+dat <- add_features(d, with_demo=F, prop_meaningful=F, per_child_norms=F)
+dat$cds_ohs = d$cds_ohs
+
+all_dat_sc = scale(dat %>% dplyr::select(-cds_ohs)) 
+
+# clustering/plotting done in 02-clustering.R
+#knitr::include_graphics("clustered_segments.png") # can we get the PDF?
+```
+
+
+
+We cluster all 12,936 segments without regard to type, and below show the means for the $k=7$ clusters, along with the proportion of each type of segment in the cluster.
+Clusters 4 and 2 capture mostly naps (63% and 58%) with low AWC, CTC, and CVC, but both clusters also include a fair number of CDS segments (22% and 26%).
+Clusters 1 and 6 are predominantly CDS (59% and 73%) and cover 36.5% of the dataset, with somewhat high mean AWC values (21.7 and 54.3), CTC (1.2 and 3.8), and CVC (4.8 and 9.5), but these clusters also contain many OHS segments (39% and 27%).
+Clusters 5 and 3 are mostly comprised of OHS segments (65% and 51%), the former with high values AWC (75.9 vs. 13.1), and both with low values of CTC (1.4 and 0.4) and CVC (2.6 and 1.8).
+However, clusters 5 and 3 also contain a large proportion of CDS segments (34% and 45%). 
+Finally, cluster 7, which looks much like the nap clusters (4 and 2) except with a higher level of TV (0.7), contains equal amounts of CDS (28%) and nap segment (27%), with somewhat more OHS segments (45%).
+Overall, clustering the segments according to their raw LENA values has shown 1) that multiple LENA features capture meaningful variation between the clusters, as some correspond mostly to naps, CDS, or OHS, and yet 2) that the clusters have significant overlap in CDS and OHS, and to a lesser extent naps.
+Given the large apparent differences between nap segments and all other segments, we first attempt to build a classifier that automatically distinguishes nap from non-nap segments using only raw LENA features. 
+An effective nap classifier would significantly ease the burden of manual coding day-long LENA recordings.
+<!-- , and will help explain the use of more complex machine learning classifiers for distinguishing CDS and OHS. --> 
+
+```{r, all-clusters, echo=F}
+load("../data/all_clusters_raw_lena_5mins.Rdata") # k-means 7 clusters
+
+all_dat_cl <- all_dat_cl %>% 
+  mutate(nap = ifelse(cds_ohs=="nap", 1, 0),
+         cds = ifelse(cds_ohs==1, 1, 0),
+         ohs = ifelse(cds_ohs==0 | cds_ohs=="split", 1, 0),
+         #split = ifelse(cds_ohs=="split", 1, 0) # lump into OHS or keep separate?
+         #cluster = kfit$cluster
+        ) %>% dplyr::select(-cds_ohs)
+
+
+all_tab <- all_dat_cl %>% group_by(cluster) %>%
+  #relocate(cluster, .before=AWC) %>%
+  summarise(cluster = median(cluster), 
+            N = n(),
+            sleep = mean(nap),
+            tCDS = mean(cds),
+            ODS = mean(ohs),
+            AWC = mean(AWC),
+            CTC = mean(CTC),
+            CVC = mean(CVC),
+            noise = mean(noise),
+            silence = mean(silence),
+            distant = mean(distant),
+            TV = mean(tv),
+            meaningful = mean(meaningful)
+            ) %>%
+  mutate(cluster = as.factor(cluster))
+
+# how many children are represented per cluster?
+children_cl <- d %>% mutate(cluster = all_dat_cl$cluster) %>% 
+  group_by(id, cluster) %>% summarise(n = n()) %>%
+  group_by(cluster) %>% 
+  summarise(Nclust=n())
+# >=103 children per cluster, some with 135+
+
+require(kableExtra)
+#knitr::kable(all_tab %>% arrange(cds, ohs), digits=2, caption= "Means of LENA variables by cluster.")
+#apa_table(all_tab %>% arrange(cds, ohs), digits=2, caption= "Means of LENA variables by cluster.") 
+
+all_tab_reorder = all_tab[c(4,5, 6,1, 7,2,3),]
+
+#all_tab_reorder %>% arrange(desc(CDS), desc(ODS)) 
+all_tab_reorder %>%
+  kbl(caption = "Means of LENA variables by cluster.", digits=2) %>%
+  kable_classic(full_width = F, html_font = "Cambria") %>%
+  column_spec(3, bold=c(T,T,F,F,F,F,F)) %>%
+  column_spec(4, bold=c(F,F,T,T,F,F,F)) %>%
+  column_spec(5, bold=c(F,F,F,F,T,T,T)) %>%
+  column_spec(1, italic=T) 
+  #row_spec(1:2, bold = T, color = "white", background = "#D7261E") %>%
+  #row_spec(3:4, bold = T, color = "white", background = "green") %>%
+  #row_spec(5:6, bold = T, color = "white", background = "blue")
+```
+
+
+# Identifying Naps 
+
+We now build a simple decision tree classifier to distinguish nap segments from waking segments, mirroring the first step that researchers often have to perform manually to clean the dataset.
+We train the model using 5-fold cross-validation on 90% of the 12,931 segments (`r Nclass["nap"]` nap segments, `r nrow(d)-Nclass["nap"]` non-naps).
+
+```{r nap-classifier, fig.width=6, fig.height=3.2, caption="This simple decision tree (left) distinguishes naps from waking segments from normalized (per-minute) LENA values, splitting first on meaningful"}
+nap_dtree = readRDS(here("nap_classifier.Rds"))
+nap_auc = round(nap_dtree$tree.roc$auc, 3)
+
+knitr::include_graphics("nap_classifier.pdf")
+```
+
+The decision tree achieves an AUC of `r nap_auc` on the held-out test set of 1294 segments. 
+Shown above, the decision tree splits first on the amount of "meaningful" speech per minute, and then on silence. 
+If meaningful speech per minute is >0.4s and silence is less than 54s per minute (i.e. 0.9), then segments are highly likely to non-naps (96.5%, 9701 of 10050 segments).
+If meaningful speech per minute is very low (<0.0063, i.e. 0.4s) and silence per minute is high (>.64, i.e. 38.4s), then these segments are highly likely to be naps (96.6%, i.e. 1017 of 1053 segments). 
+If meaningful speech is very low but silence per minute is also low, then when child vocalizations (CVC) are low (<6s/min) and the amount of distant speech is low (<15s/min), then segments are also somewhat more likely to be naps (71.7%, 231 of 322 segments), although hand-coding this much smaller number of segments may be desirable to achieve higher accuracy.
+
+Having found that raw LENA features can be effectively used to separate nap segments from non-nap segments, we now turn to the more challenging task of building a classifier to automatically distinguish CDS from non-CDS segments.
+While a simple decision tree performs very well for the simple case of naps, it is unlikely to work well for the overlapping clusters of child-directed and overheard speech. 
+Thus, we will instead use a more sophisticated machine learning model: XGBoost (eXtreme Gradient-Boosted trees), a state-of-the-art classifier consisting of a cascade of decision trees that are successively trained on the datapoints that were misclassified by the earlier decision trees.
+
+# Classifying Child-directed vs. Overheard speech
+
+We trained a classifier on raw LENA features to distinguish child-directed speech segments from all other segments (overheard speech, and split segments).
+First, we removed the `r Nclass["nap"]` segments during which children were napping (assuming they would be cleaned by hand or removed by the nap classifier).
+We then reclassified the `r Nclass["split"]` 'split' segments which raters judged to be 50% overheard speech (OHS) and 50% child-directed speech (CDS) as ODS (0), making for a total of `r Nclass["split"] + Nclass["0"]` OHS segments and `r Nclass["1"]` CDS segments (`r 100*round(Nclass["1"]/(Nclass["1"]+Nclass["0"]),3)`% CDS). 
+The purpose of the classifier is thus to distinguish "pure" CDS from mixed or pure ODS.
+A random 90% of the data (`r round(.9*(nrow(all_dat_cl)-Nclass["nap"]))` segments) were used to train the classifier, and the remaining 10% (`r round(.1*(nrow(all_dat_cl)-Nclass["nap"]))` segments) were used for evaluation.
+
+```{r, eval=F, echo=F, include=F, results='hide'}
+d_nonaps <- d %>% filter(cds_ohs!="nap")
+dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=F, per_child_norms=F) 
+
+xgb <- readRDS("../xgb_model.rds")
+```
+
+
+
+```{r retrain-on-all, echo=F, include=F, results='hide'}
+d_nonaps <- d %>% filter(cds_ohs!="nap")
+dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=F, per_child_norms=F)
+
+xgb_final <- readRDS("../final_rawLENA_xgb_model.Rds")
+# ToDo: roc and cmOOF are not in this data structure
+# When trained on 90% of the segments using the normalized LENA features, the XGBoost classifier achieves an AUC of `r round(xgb_final$roc$auc,3)`, with an overall accuracy of `r round(xgb_final$cmOOF$overall['Accuracy'],3)` on the held-out data.
+
+table(xgb_final$preds$cds_ohs, xgb_final$preds$CDSpred)
+```
+
+
+```{r, xgboost-raw-lena, echo=F, include=F, eval=F, caption="ROC and feature importance for the XGBoost classifier trained on normalized LENA features."}
+# with naps: AUC = .83 acc = .74
+# without naps: AUC .746, acc = .675
+dat$id = d_nonaps$id 
+
+#library(cowplot)
+
+#xgb = xgb_mean # meaningful-normed does better
+
+col_names = attr(xgb$train.data, ".Dimnames")[[2]]
+imp = xgb.importance(col_names, xgb$model)
+
+# plot AUC and importance
+pdf("rawLENA-xgboost-AUC-importance.pdf", width=8, height=4)
+par(mfcol = c(1, 2), mai=c(0.7,0.0,0.2,0.1))
+plot(xgb$roc)
+text(x=.5, y=.1, paste0("AUC = ",round(auc(xgb$roc), 2))) 
+#par(fig=c(0.5,1,0,1), new=TRUE)
+xgb.plot.importance(imp, left_margin = 3, main="Feature Importance", cex=.8)
+importance_matrix <- xgb.importance(col_names, model = xgb$model)
+dev.off()
+#print(importance_matrix)
+
+ttpreds = xgb$ttdat
+ttpreds$id = d_nonaps[rownames(xgb$ttdat),]$id
+ttpreds$cos = d_nonaps[rownames(xgb$ttdat),]$cds_ohs # CDS / OHS / split
+
+#write.csv(ttpreds, file="rawLENAxgb.csv")
+
+cfm = table(ttpreds$cds_ohs, ttpreds$CDSpred)
+#round(cfm / rowSums(cfm), 2)
+#       0    1
+#  0 0.73 0.27
+#  1 0.25 0.75
+#cor.test(ttpreds$pred, ttpreds$propCTC) # .43
+#cor.test(ttpreds$pred, ttpreds$propAWC) # -.05
+#cor.test(ttpreds$pred, ttpreds$silence) # .46
+#cor.test(ttpreds$pred, ttpreds$propCVC) # .27
+    
+```
+
+```{r, caption="Histogram of classifier confidence by segment type."}
+ttpreds = xgb_final$preds
+ttpreds$cos = d_nonaps[rownames(xgb_final$preds),]$cds_ohs # CDS / OHS / split
+
+d_all <- d_allfeat %>% filter(cds_ohs!="nap") %>%
+  mutate(xgb_pred = xgb_final$preds$pred,
+         CDSpred = xgb_final$preds$CDSpred)
+
+#write.csv(ttpreds, file="rawLENAxgb.csv")
+
+cfm = table(ttpreds$cds_ohs, ttpreds$pred)
+
+high_conf_CDS <- subset(d_all, xgb_pred>0.7)
+high_conf_ODS <- subset(d_all, xgb_pred<0.3)
+
+table(high_conf_CDS$cds_ohs) / nrow(high_conf_CDS) # 2171 / 11057 (2884 for .7)
+table(high_conf_ODS$cds_ohs) / nrow(high_conf_ODS) # 1564 / 11057 (2196 for .3)
+# only 26% of the 'split' segments were given high-confidence ratings in the model (Pr(tCDS)<.3 or Pr(tCDS)>.7)
+
+low_conf <- subset(d_all, xgb_pred>.4 & xgb_pred<.6) # 3136
+#low_conf <- subset(d_all, xgb_pred>.3 & xgb_pred<.7) # 661/1012 splits in this range
+table(low_conf$cds_ohs) # 1534 / 3136 = 49% are tCDS
+# 370 splits (out of 1012) are in this range: 37%
+
+ttpreds %>% mutate(`Segment Type` = case_when(
+  cos==0 ~ "ODS",
+  cos==1 ~ "tCDS",
+  TRUE ~ cos
+)) %>% 
+  #filter(cos!="split") %>% # remove splits for BUCLD abstract
+  ggplot(aes(x=pred, group=`Segment Type`, fill=`Segment Type`)) + 
+   geom_histogram(alpha=.5, position = 'identity') + # facet_wrap(vars(cos)) + 
+   theme_classic() + xlab("Classifier Pr(tCDS)") +
+   geom_vline(xintercept=.5, linetype='dashed') + ylab("Number of Segments")
+```
+
+<!-- It may even be that giving human raters access to the classifier’s probability estimates helps to speed their judgments, and even to calibrate their [ToDo: consider showing how the ranking of participants / correlation to outcomes change if you only consider the highest confidence (e.g., Pr(tCDS)>.95 / .9 / .85 etc.) CDS] -->
+
+When using a more sophisticated classifier, there is a greater danger of overfitting to the dataset. 
+Thus, in addition to training on 90% of the data and testing on the remaining 10%, we will also test the generality of the XGBoost classifier, we also conducted cross-validation checks by leaving out data from 10% of the children in each of ten folds (i.e., 10-fold cross-validation) and training the classifier on the remaining 90% of the children's data.
+
+```{r, xgboost-raw-lena-children, echo=F, message=F, include=F, results='hide'}
+dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=F, per_child_norms=F)
+dat$id = d_nonaps$id
+xgb_ch = do_child_level_cv(dat, fname="raw", k=10) # AUC=.73, test=.66
+#mean(xgb_ch$auc) # 10min: .72  5min: .76  with naps: .794
+#mean(xgb_ch$test_acc) # 10min: .66  5min: .69 with naps: .71
+
+#dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=F, per_child_norms=F) 
+#dat$id = d_nonaps$id
+#xgb_ch_raw = do_child_level_cv(dat, fname="rawLENA", k=10) # acc: .66 auc: .73
+#raw_ch_acc = mean(xgb_ch_raw$test_acc) # .66
+#raw_ch_auc = mean(xgb_ch_raw$auc) # .73
+
+dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=T, per_child_norms=F) 
+dat$id = d_nonaps$id
+xgb_ch_meaningful = do_child_level_cv(dat, fname="meaningful", k=10) # acc: .67 auc: .73
+meaning_ch_acc = mean(xgb_ch_meaningful$test_acc) # .67
+meaning_ch_auc = mean(xgb_ch_meaningful$auc) # .73
+
+
+# start to see overfitting
+#dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=F, per_child_norms=T) # bal acc: .74 (test ch CV)
+#dat$id = d_nonaps$id
+#xgb_ch3 = do_child_level_cv(dat, fname="per_child_norms", k=10) # acc: .63 auc: .69
+#dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=T, per_child_norms=T) # bal acc: .75 (test ch CV)
+#dat$id = d_nonaps$id
+#xgb_ch4 = do_child_level_cv(dat, fname="per_child_meaningful") # acc: .64 auc: .70
+```
+
+This children-left-out cross-validation had a mean test accuracy of `r round(meaning_ch_acc, 2)` (sd=`r round(sd(xgb_ch_meaningful$test_acc),2)`) and a mean AUC of `r round(meaning_ch_auc, 2)` (sd=`r round(sd(xgb_ch_meaningful$auc),2)`). 
+Since these values are quite similar to the test accuracy and AUC from the segment-based cross-validation, we can rest assured that the XGboost model is not simply overfitting to each participant, and should therefore generalize to entirely new participants.
+(GK: maybe move child-CV to the Appendix and mention in a footnote)
+
+# Results
+
+## Inter-rater reliability
+
+Plan is to have 40 person-hours go into checking reliability. Should do some from each dataset, but oversampling from CONTX seems wise to double-check the 
+
+## Validation of classifier
+Label additional few hundred segments (from CONTX). 
+(Can easily generate predictions from the classifier for all CONTX segments now!)
+
+## Outcomes
+
+```{r wf-outcomes, echo=F}
+wf_outcomes <- read_csv("../data/S-LENAdata-FINAL.csv") %>% 
+  arrange(SubNum) %>%
+  mutate(FreqOHShr = FreqOH_noMedia * 60) # AWC/min of OHS segments
+
+wf_CDS_vs_vocab <- cor.test(wf_outcomes$FreqCDShr, wf_outcomes$vocab24) # .52 p<.01
+wf_OHS_vs_vocab <- cor.test(wf_outcomes$FreqOHShr, wf_outcomes$vocab24) # .25
+cor.test(wf_outcomes$FreqCDShr, wf_outcomes$FreqOHShr) # .17
+with(wf_outcomes, plot(FreqCDShr, FreqOHShr))
+```
+
+One critical question is whether the classifier trained above works sufficiently well to replicate the results from manually-annotated studies.
+To test this, we use the Weisleder & Fernald (2013) dataset of 29 Spanish-speaking children, who were tested at 19 months and again at 24 months of age.
+In this dataset, children who heard more CDS at 19 months had significantly larger vocabularies at 24 months (`r apa_print(wf_CDS_vs_vocab)$full_result`).
+Meanwhile, there was no significant relationship between the amount of overheard speech at 19 months and vocabulary size at 24 months (`r apa_print(wf_OHS_vs_vocab)$full_result`).
+Now we use the model's predicted CDS/OHS segments instead of the manual annotations to see if we recover these same outcomes.
+
+```{r outcomes-comparison}
+# can we recover the same hourly AWC with our large dataframe?
+
+### NEED TO ASSIGN SPLIT SEGMENTS 50% CDS / 50% ODS
+#split_idx = which(d$cds_ohs=="split")
+#d[split_idx,]$AWC = d[split_idx,]$AWC / 2
+#dag_cds = d %>% filter(cds_ohs!=0) %>% group_by(id) %>% 
+#  summarise(total_CDS = sum(AWC)) %>%
+#  left_join(dag, by=c("id")) %>%
+#  mutate(CDS_hr = total_CDS / total_duration_hrs) %>%
+#  dplyr::select(-id)
+
+# Adriana: Discrepancy is due to the “no media” segments, which we excluded but in your dataset are included as part of ODS. I don’t think it’s a huge deal because the correlations didn’t really change whether we excluded those segments or not, but if we want the numbers to match WF exactly then we would need to exclude them
+# I’m attaching a file that has the segments we excluded because they were only media. It is the last variable in this file. But I think this file has some segments that are not in yours for other reasons (e.g., child was sleeping, it was a dif day, etc), so you will have to match the datasets based on id and Time.  In my file the Time variable that you want is called ClockTime. I also left the CDS, ODS, and split variables there so you can double check in case things still don’t match up. Let me know if you have any questions or want to chat
+# These segments are included in the dataset you have; this dataset just indicates which ones should be excluded. These were segments that we originally marked as “child alone”, meaning that we could not hear any other live speaker in the segment, therefore the AWC estimated by LENA must have come from electronic media. Does that make sense?
+wf_dat <- read.csv(here("data/WFdata_MediaSegmentstoExclude.csv"))
+wf_media_exclusions <- wf_dat %>% filter(Media_exclude==1)
+# ToDo: remove these 348 segments from the CDS / OHS counts, see if we match
+
+subj_total_dur <- d_all %>%
+  group_by(id, language, Dataset) %>%
+  summarise(total_dur_hr = sum(dur_min) / 60) %>%
+  arrange(id)
+
+# grouped by human binary ratings of CDS / ODS
+hum_per_hr <- d_all %>% 
+  mutate(expCDS_AWC = xgb_pred * AWC,
+         expODS_AWC = (1-xgb_pred) * AWC) %>%
+  left_join(subj_total_dur) %>%
+  group_by(id, language, Dataset, cds_ohs) %>% 
+  summarise(total_dur_hr = total_dur_hr[1],
+            expCDS_AWC = sum(expCDS_AWC) / total_dur_hr,
+            expODS_AWC = sum(expODS_AWC) / total_dur_hr,
+            AWC = sum(AWC) / total_dur_hr, 
+            CTC = sum(CTC) / total_dur_hr, 
+            CVC = sum(CVC) / total_dur_hr,
+            noise = sum(noise_min) / total_dur_hr,
+            silence = sum(silence_min) / total_dur_hr,
+            tv = sum(tv_min) / total_dur_hr) %>%
+  arrange(id) 
+
+# grouped by binarized model prediction of CDS / ODS
+mod_per_hr <- d_all %>% 
+  left_join(subj_total_dur) %>%
+  mutate(expCDS_AWC = xgb_pred * AWC,
+         expODS_AWC = (1-xgb_pred) * AWC) %>%
+  group_by(id, language, Dataset, CDSpred) %>% 
+  summarise(total_dur_hr = total_dur_hr[1],
+            expCDS_AWC = sum(expCDS_AWC) / total_dur_hr,
+            expODS_AWC = sum(expODS_AWC) / total_dur_hr,
+            AWC = sum(AWC) / total_dur_hr, 
+            CTC = sum(CTC) / total_dur_hr, 
+            CVC = sum(CVC) / total_dur_hr) %>%
+  arrange(id) 
+
+# plots for BUCLD
+#hum_per_hr %>% filter(Dataset=="WF") 
+#mod_per_hr %>%
+
+# high-confidence model predictions, grouped by binarized model CDS prediction
+mod_hc_per_hr <- d_all %>%
+  left_join(subj_total_dur) %>%
+  filter(xgb_pred < .25 | xgb_pred > .75) %>% # keeps 3633 / 11057 (33%)
+  mutate(expCDS_AWC = xgb_pred * AWC,
+         expODS_AWC = (1-xgb_pred) * AWC) %>%
+  group_by(id, CDSpred) %>% 
+  summarise(total_dur_hr = total_dur_hr[1],
+            expCDS_AWC = sum(expCDS_AWC) / total_dur_hr,
+            expODS_AWC = sum(expODS_AWC) / total_dur_hr,
+            AWC = sum(AWC) / total_dur_hr, 
+            CTC = sum(CTC) / total_dur_hr, 
+            CVC = sum(CVC) / total_dur_hr) %>%
+  arrange(id) 
+
+# total per-subject hourly AWC, etc, as well as model-expected AWC
+# (ignores human ratings)
+modexp_per_hr <- d_all %>%
+  left_join(subj_total_dur) %>%
+  mutate(expCDS_AWC = xgb_pred * AWC,
+         expODS_AWC = (1-xgb_pred) * AWC) %>%
+  group_by(id, Dataset, language, mom_ed, fat_ed) %>% 
+  summarise(segments = n(),
+            total_dur_hr = total_dur_hr[1],
+            expCDS_AWC = sum(expCDS_AWC) / total_dur_hr,
+            expODS_AWC = sum(expODS_AWC) / total_dur_hr,
+            AWC = sum(AWC) / total_dur_hr, 
+            CTC = sum(CTC) / total_dur_hr, 
+            CVC = sum(CVC) / total_dur_hr) %>%
+  arrange(id) 
+
+
+# deal with splits
+hum_per_hr_wide <- hum_per_hr %>%
+  pivot_wider(id_cols=c("id","language","Dataset"), names_from=cds_ohs, values_from=AWC) %>%
+  rename(OHS_AWChr = `0`,
+         CDS_AWChr = `1`) %>%
+  mutate(split = ifelse(is.na(split), 0, split)) %>%
+  mutate(OHS_AWChr = OHS_AWChr + .5*split,
+         CDS_AWChr = CDS_AWChr + .5*split) %>%
+  dplyr::select(-split)
+
+
+WFdata <- hum_per_hr_wide %>%
+  filter(Dataset=="WF") %>%
+  left_join(wf_outcomes, by=c("id"="SubNum"))
+
+#cor(WFdata$OHS_AWChr, WFdata$FreqOHShr) # .94
+#plot(WFdata$OHS_AWChr, WFdata$FreqOHShr) # still a few weird OHS kids! naps? remove media..?
+
+#cor(WFdata$CDS_AWChr, WFdata$FreqCDShr) # .999
+#plot(WFdata$CDS_AWChr, WFdata$FreqCDShr) # perfect
+
+#cor(WFdata$CDS_AWChr, WFdata$vocab24) # .52
+#cor(WFdata$OHS_AWChr, WFdata$vocab24) # .17 <- our OHS calcs..
+#cor(WFdata$FreqOHShr, WFdata$vocab24) # .25 <- WF paper
+
+
+# do we get the same if we use classifier-predicted CDS (binarized)?
+CDSpred <- wf_outcomes %>%
+  left_join(mod_per_hr %>% filter(CDSpred==1), by=c("SubNum"="id"))
+OHSpred <- wf_outcomes %>%
+  left_join(mod_per_hr %>% filter(CDSpred==0), by=c("SubNum"="id"))
+cor.test(CDSpred$vocab24, CDSpred$AWC) # r=.48 p<.01
+cor.test(OHSpred$vocab24, OHSpred$AWC) # r=.32 p=.09
+
+cor.test(OHSpred$AWC, CDSpred$AWC) # 0.16
+
+p1 <- CDSpred %>% ggplot(aes(x=FreqCDShr, y=vocab24)) + geom_point() +
+  geom_smooth(method='lm') + theme_classic() + 
+  stat_cor(aes(label=..rr.label..), label.x=30, label.y=500) +
+  xlab("Hand-coded tCDS") + ylab("Vocabulary at 24 months")
+p2 <- CDSpred %>% ggplot(aes(x=AWC, y=vocab24)) + geom_point() +
+  geom_smooth(method='lm') + theme_classic() + 
+  stat_cor(aes(label=..rr.label..), label.x=30, label.y=500) +
+  xlab("Model-predicted tCDS") + ylab("Vocabulary at 24 months")
+ggarrange(p1, p2, nrow=1)
+ggsave("WF_outcomes_hand-coded_vs_modelCDS.pdf", width=6, height=3)
+
+
+p1 <- OHSpred %>% ggplot(aes(x=FreqOH_noMedia*60, y=vocab24)) + geom_point() +
+  geom_smooth(method='lm') + theme_classic() + 
+  stat_cor(aes(label=..rr.label..), label.x=1, label.y=450) +
+  xlab("Hand-coded ODS") + ylab("Vocabulary at 24 months")
+p2 <- OHSpred %>% ggplot(aes(x=AWC, y=vocab24)) + geom_point() +
+  geom_smooth(method='lm') + theme_classic() + 
+  stat_cor(aes(label=..rr.label..), label.x=30, label.y=500) +
+  xlab("Model-predicted ODS") + ylab("Vocabulary at 24 months")
+ggarrange(p1, p2, nrow=1)
+ggsave("WF_outcomes_hand-coded_vs_modelOHS.pdf", width=6, height=3)
+
+pred_vs_actual_CDS <- cor.test(CDSpred$AWC, CDSpred$FreqCDShr) # .78 - close!
+pred_vs_actual_OHS <- cor.test(OHSpred$AWC, CDSpred$FreqOH_noMedia) # .88 - not too bad
+modCDS_vs_vocab <- cor.test(CDSpred$AWC, wf_outcomes$vocab24) # orig: .53 / .48
+modOHS_vs_vocab <- cor.test(OHSpred$AWC, wf_outcomes$vocab24) # .36 / .32 
+
+# now use high-confidence binarized model predictions
+CDSpred <- wf_outcomes %>%
+  left_join(mod_hc_per_hr %>% filter(CDSpred==1), by=c("SubNum"="id"))
+OHSpred <- wf_outcomes %>%
+  left_join(mod_hc_per_hr %>% filter(CDSpred==0), by=c("SubNum"="id"))
+
+modCDS_vs_vocab <- cor.test(CDSpred$AWC, wf_outcomes$vocab24) # now .44 p=.02
+modOHS_vs_vocab <- cor.test(OHSpred$AWC, wf_outcomes$vocab24) # now .22 p=.25
+
+# now use model expected CDS / ODS AWC
+mod_expected <- wf_outcomes %>%
+  left_join(modexp_per_hr, by=c("SubNum"="id"))
+
+cor.test(mod_expected$expCDS_AWC, mod_expected$vocab24) # r=.56, t(27) = 3.53, p=.001
+cor.test(mod_expected$expODS_AWC, mod_expected$vocab24) # r=.35 t(27) = 1.94, p=.06
+
+cor.test(mod_expected$expCDS_AWC, mod_expected$FreqCDShr)
+
+# how well can we predict vocab24 combining model-expected hourly CDS AWC and ODS AWC?
+summary(lm(vocab24 ~ 0 + expCDS_AWC + expODS_AWC, data=mod_expected)) # r^2 = .82
+summary(lm(vocab24 ~ 0 + expODS_AWC, data=mod_expected)) # r^2 = .71
+summary(lm(vocab24 ~ 0 + expCDS_AWC, data=mod_expected)) # r^2 = .82
+# r^2 = .82, coefficients: expCDS_AWC = 0.490, expODS_AWC = 0.005 (n.s.)
+# (CDS alone coef: 0.31, r^2 = .71)
+
+# compare to original vars:
+summary(lm(vocab24 ~ 0 + FreqCDShr + FreqOH_noMedia, data=mod_expected))
+# r^2 = .80
+
+summary(lm(vocab24 ~ 0 + AWC + CTC + CVC, data=mod_expected)) # r^2=.808 AWC+*, CVC.
+summary(lm(vocab24 ~ 0 + AWC + CTC, data=mod_expected)) # r^2=.78
+
+summary(lm(vocab24 ~ 0 + AWC + CTC, data=mod_expected))
+
+# look at means for WF-coded vs. classifier-predicted CDS/ODS
+
+#per_hr %>% group_by(cds_ohs) %>%
+#  summarise(AWC=mean(AWC), CTC=mean(CTC), CVC=mean(CVC))
+
+#pred_outcomes %>% group_by(CDSpred) %>%
+#  summarise(AWC=mean(AWC), CTC=mean(CTC), CVC=mean(CVC))
+```
+
+
+```{r}
+require(GGally)
+ggpairs(mod_expected, columns= c("CTC","AWC","FreqCDShr","FreqOH_noMedia","expCDS_AWC","expODS_AWC","vocab24"), 
+        ggplot2::aes(alpha=.5)) + 
+  theme_bw()
+ggsave("model_expectedCDS_vs_WForig.pdf", width=9, height=9)
+```
+
+
+```{r}
+combo <- rbind(CDSpred, OHSpred)
+ggpairs(combo, columns = c("AWC","FreqCDShr","FreqOH_noMedia","vocab24"), 
+        ggplot2::aes(colour=as.factor(CDSpred), alpha=.4)) + 
+  theme_classic()
+```
+
+
+Using the model's predictions, as in the original dataset, children who heard more CDS at 19 months had significantly larger vocabularies at 24 months (`r apa_print(modCDS_vs_vocab)$full_result`).
+As with the original manual annotations, when using the model's predictions there was no significant relationship between the amount of overheard speech at 19 months and vocabulary size at 24 months (`r apa_print(modOHS_vs_vocab)$full_result`).
+Moreover, the strength of these correlations are very similar to those found in the original analysis.
+
+### Additional CONTX Predictions?
+Use the classifier to predict CDS / OHS for the rest of the CONTX dataset,
+and correlate total (predicted) CDS vs. outcomes (CDI scores), and compare to correlation between raw AWC and outcomes.
+
+# Discussion
+
+Clustered LENA segments, identified two clusters each of CDS, OHS, and naps -- all with very different profiles. And one cluster with a mixture of CDS and OHS, promising that classifying based on LENA features may be difficult.
+Built a good nap classifier--a decision tree, so also easy to understand.
+Built a CDS/OHS classifier that promises to work decently well for new participants, and which can be used to suggest manual annotation for low-confidence classifications.
+Even with fully automated classifications, we replicate (reproduce?) Weisleder & Fernald's (2013) results with respect to significance and strength of correlations of CDS and OHS with vocabulary size. 
+
+\newpage
+
+# References
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+<div id="refs" custom-style="Bibliography"></div>
+\endgroup

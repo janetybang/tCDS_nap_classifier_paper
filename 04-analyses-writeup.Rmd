@@ -192,7 +192,7 @@ Next, including data from all 153 families across the five samples, we then cond
 (G copied from Google doc up to here)
 
 ```{r, load-data, echo=F}
-load("../data/combined_data_5min.Rdata")
+load("data/combined_data_5min.Rdata")
 
 d_allfeat <- d
 
@@ -202,7 +202,7 @@ d_allfeat <- d
 #d$mom_ed = NULL
 
 # could get CDS predictions for all of CONTX..
-all_contx <- read_csv(file="../data/allCONTX_wNaps.csv") %>% 
+all_contx <- read_csv(file="data/allCONTX_wNaps.csv") %>% 
   filter(Sleep==0) 
 # but we're missing some columns: noise_min, silence_min, meaningful_min, distant_min, tv_min, hi
 
@@ -293,7 +293,7 @@ We separately do the same for all `r nrow(d)-Nclass['1']` segments that are not 
 Based on the weighted sum of squares vs. $k$ plots below, we choose $k=5$ for both the child-directed speech and for the non-CDS data.
 
 ```{r, cluster-cds, echo=F, caption="Weighted sum of squares vs. number of clusters."}
-source("../two-class.R")
+source("two-class.R")
 dat <- add_features(d, with_demo=F, prop_meaningful=F, per_child_norms=F)
 dat$cds_ohs = d$cds_ohs
 
@@ -317,7 +317,7 @@ An effective nap classifier would significantly ease the burden of manual coding
 <!-- , and will help explain the use of more complex machine learning classifiers for distinguishing CDS and OHS. --> 
 
 ```{r, all-clusters, echo=F}
-load("../data/all_clusters_raw_lena_5mins.Rdata") # k-means 7 clusters
+load("data/all_clusters_raw_lena_5mins.Rdata") # k-means 7 clusters
 
 all_dat_cl <- all_dat_cl %>% 
   mutate(nap = ifelse(cds_ohs=="nap", 1, 0),
@@ -407,7 +407,7 @@ A random 90% of the data (`r round(.9*(nrow(all_dat_cl)-Nclass["nap"]))` segment
 d_nonaps <- d %>% filter(cds_ohs!="nap")
 dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=F, per_child_norms=F) 
 
-xgb <- readRDS("../xgb_model.rds")
+xgb <- readRDS("models/xgb_model.rds")
 ```
 
 
@@ -416,7 +416,7 @@ xgb <- readRDS("../xgb_model.rds")
 d_nonaps <- d %>% filter(cds_ohs!="nap")
 dat <- add_features(d_nonaps, with_demo=F, prop_meaningful=F, per_child_norms=F)
 
-xgb_final <- readRDS("../final_rawLENA_xgb_model.Rds")
+xgb_final <- readRDS("models/final_rawLENA_xgb_model.Rds")
 # ToDo: roc and cmOOF are not in this data structure
 # When trained on 90% of the segments using the normalized LENA features, the XGBoost classifier achieves an AUC of `r round(xgb_final$roc$auc,3)`, with an overall accuracy of `r round(xgb_final$cmOOF$overall['Accuracy'],3)` on the held-out data.
 
@@ -552,7 +552,7 @@ Label additional few hundred segments (from CONTX).
 ## Outcomes
 
 ```{r wf-outcomes, echo=F}
-wf_outcomes <- read_csv("../data/S-LENAdata-FINAL.csv") %>% 
+wf_outcomes <- read_csv("data/S-LENAdata-FINAL.csv") %>% 
   arrange(SubNum) %>%
   mutate(FreqOHShr = FreqOH_noMedia * 60) # AWC/min of OHS segments
 
@@ -704,7 +704,7 @@ p2 <- CDSpred %>% ggplot(aes(x=AWC, y=vocab24)) + geom_point() +
   stat_cor(aes(label=..rr.label..), label.x=30, label.y=500) +
   xlab("Model-predicted tCDS") + ylab("Vocabulary at 24 months")
 ggarrange(p1, p2, nrow=1)
-ggsave("WF_outcomes_hand-coded_vs_modelCDS.pdf", width=6, height=3)
+ggsave("figs/WF_outcomes_hand-coded_vs_modelCDS.pdf", width=6, height=3)
 
 
 p1 <- OHSpred %>% ggplot(aes(x=FreqOH_noMedia*60, y=vocab24)) + geom_point() +
@@ -716,7 +716,7 @@ p2 <- OHSpred %>% ggplot(aes(x=AWC, y=vocab24)) + geom_point() +
   stat_cor(aes(label=..rr.label..), label.x=30, label.y=500) +
   xlab("Model-predicted ODS") + ylab("Vocabulary at 24 months")
 ggarrange(p1, p2, nrow=1)
-ggsave("WF_outcomes_hand-coded_vs_modelOHS.pdf", width=6, height=3)
+ggsave("figs/WF_outcomes_hand-coded_vs_modelOHS.pdf", width=6, height=3)
 
 pred_vs_actual_CDS <- cor.test(CDSpred$AWC, CDSpred$FreqCDShr) # .78 - close!
 pred_vs_actual_OHS <- cor.test(OHSpred$AWC, CDSpred$FreqOH_noMedia) # .88 - not too bad
@@ -772,7 +772,7 @@ require(GGally)
 ggpairs(mod_expected, columns= c("CTC","AWC","FreqCDShr","FreqOH_noMedia","expCDS_AWC","expODS_AWC","vocab24"), 
         ggplot2::aes(alpha=.5)) + 
   theme_bw()
-ggsave("model_expectedCDS_vs_WForig.pdf", width=9, height=9)
+ggsave("figs/model_expectedCDS_vs_WForig.pdf", width=9, height=9)
 ```
 
 

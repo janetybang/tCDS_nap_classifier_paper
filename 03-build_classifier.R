@@ -19,7 +19,7 @@ library(ggpubr)
 load("data/combined_data_5min.Rdata")
 d$time = NULL
 
-# nap decision tree
+# sleep (nap) decision tree
 source("two-class.R")
 # re-code naps as 1, all else as 0
 nap_d <- d %>% mutate(cds_ohs = ifelse(cds_ohs=="nap", 1, 0))
@@ -27,9 +27,9 @@ nap_dat <- add_features(nap_d, with_demo=F, prop_meaningful=F, per_child_norms=F
 nap_d_tt = get_train_test_cv(nap_dat, train_proportion=.9)
 
 nap_dtree <- create_single_tree(nap_d_tt$train, nap_d_tt$test, nap_d_tt$cv, save.plot=F, show.plot=F)
+#saveRDS(nap_dtree, file=here("models/sleep_classifier.Rds"))
+nap_dtree <- readRDS("models/sleep_classifier.Rds")
 nap_auc = round(nap_dtree$tree.roc$auc, 3)
-saveRDS(nap_dtree, file=here("nap_classifier.Rds"))
-#nap_dtree <- readRDS("nap_classifier.Rds")
 
 nap_cm <- tibble(nap_prob = nap_dtree$tree.preds,
                  actual = nap_d[as.numeric(names(nap_dtree$tree.preds)),]$cds_ohs) %>%
@@ -44,7 +44,7 @@ table(nap_cm$actual) # test set had 178 naps
 # accuracy = TP + TN / all
 # (139 + 1084) / 1294 = .945
 
-pdf("nap_classifier.pdf", width=6, height=3.2)
+pdf("figs/sleep_classifier.pdf", width=6, height=3.2)
 par(mfrow=c(1,2))
 plot(nap_dtree$tree.roc, xlim=c(1,0), cex.lab=.8, cex.axis=.8)
 text(x=.45, y=.1, paste0("AUC = ",nap_auc), cex=.8) 
@@ -52,7 +52,7 @@ rpart.plot(nap_dtree$tree.model, type = 2, extra = 7, fallen.leaves = T) # extra
 dev.off()
 
 
-pdf("nap_classifier_gray.pdf", width=6, height=3.2)
+pdf("figs/sleep_classifier_gray.pdf", width=6, height=3.2)
 par(mfrow=c(1,2))
 plot(nap_dtree$tree.roc, xlim=c(1,0), cex.lab=.8, cex.axis=.8)
 text(x=.45, y=.1, paste0("AUC = ",nap_auc), cex=.8) 
@@ -60,12 +60,12 @@ rpart.plot(nap_dtree$tree.model, type = 2, extra = 7, box.palette = "Grays",
            fallen.leaves = T) # extra=2 for raw counts
 dev.off()
 
-pdf("nap_classifier_counts.pdf", width=3.5, height=3.2)
+pdf("figs/sleep_classifier_counts.pdf", width=3.5, height=3.2)
 rpart.plot(nap_dtree$tree.model, type = 2, extra = 2, box.palette = "Grays",
            fallen.leaves = T) 
 dev.off()
 
-# final nap classifier trained on all data
+# final sleep (nap) classifier trained on all data
 create_final_tree <- function(dat, cv, seed=42, save.plot=T, show.plot=T) {
   set.seed(seed) # reproducible
   cds_ohs = which(names(dat)=="cds_ohs") # class column number
@@ -82,10 +82,11 @@ create_final_tree <- function(dat, cv, seed=42, save.plot=T, show.plot=T) {
 }
 
 fnap_dtree <- create_final_tree(nap_dat, save.plot=F, show.plot=F)
+#saveRDS(fnap_dtree, file=here("models/sleep_classifier_final.Rds"))
+load(here("models/sleep_classifier_final.Rds"))
 fnap_auc = round(fnap_dtree$tree.roc$auc, 3)
-saveRDS(fnap_dtree, file=here("nap_classifier_final.Rds"))
 
-pdf("final_nap_classifier_gray.pdf", width=6, height=3.2)
+pdf("figs/final_sleep_classifier_gray.pdf", width=6, height=3.2)
 par(mfrow=c(1,2))
 plot(fnap_dtree$tree.roc, xlim=c(1,0))
 text(x=.65, y=.6, paste0("AUC = ",fnap_auc)) 
@@ -93,7 +94,7 @@ rpart.plot(fnap_dtree$tree.model, type = 2, extra = 7, box.palette = "Grays",
            fallen.leaves = T) # extra=2 for raw counts
 dev.off()
 
-pdf("final_nap_classifier_gray_counts.pdf", width=3.5, height=3.2)
+pdf("figs/final_sleep_classifier_gray_counts.pdf", width=3.5, height=3.2)
 rpart.plot(fnap_dtree$tree.model, type = 2, extra = 2, box.palette = "Grays",
            fallen.leaves = T) 
 dev.off()
@@ -141,9 +142,11 @@ dd_mean = get_train_test_cv(dat_mean, train_proportion=.9)
 
 xgb = create_xgboost_model(dd$train, dd$test, dd$cv, graph=F)
 xgb_mean = create_xgboost_model(dd_mean$train, dd_mean$test, dd_mean$cv, graph=F)
-# should retrain model on all data and save it for future use
-saveRDS(xgb, file="xgb_model.rds") # AUC = .72 bal acc: .67
-saveRDS(xgb_mean, file="xgb_model_meaningful_normed.rds") # AUC=.73 bal acc: .67
+
+#saveRDS(xgb, file="models/xgb_model.rds") # AUC = .72 bal acc: .67
+#saveRDS(xgb_mean, file="models/xgb_model_meaningful_normed.rds") # AUC=.73 bal acc: .67
+xgb <- readRDS("models/xgb_model.rds")
+xgb_mean <- readRDS("models/xgb_model_meaningful_normed.rds")
 
 # child-left-out CV
 child_cv <- do_child_level_cv(dat %>% mutate(id = d_nonaps$id), fname="rawLENA")
@@ -167,7 +170,7 @@ train_final_xgb_classifier <- function(dat) {
   # ROC on the test set (do we want it on combined test and train set?)
   xgb.roc_obj <- roc(dat[,cds_ohs], xgb.preds)
   # AUC = .83
-  pdf("xgb-final-rawLENA-ROC.pdf", width=4, height=4)
+  pdf("figs/xgb-final-rawLENA-ROC.pdf", width=4, height=4)
   plot(xgb.roc_obj)
   text(x=.3, y=.2, paste("AUC =",round(xgb.roc_obj$auc, 3)))
   dev.off()
@@ -175,18 +178,20 @@ train_final_xgb_classifier <- function(dat) {
   col_names = attr(xgb.train.data, ".Dimnames")[[2]]
   imp = xgb.importance(col_names, xgb.model)
   roc_plot = plot(xgb.roc_obj)
-  pdf("xgb-final-rawLENA-importance.pdf", width=4.5, height=4.5)
+  pdf("figs/xgb-final-rawLENA-importance.pdf", width=4.5, height=4.5)
   xgb.plot.importance(imp)
   dev.off()
   
   xgb <- list(model = xgb.model, preds = dat, importance=imp)
-  xgb.save(xgb.model, "final_rawLENA_xgb.model")
-  saveRDS(xgb, file="final_rawLENA_xgb_model.Rds")
+  xgb.save(xgb.model, "models/final_rawLENA_xgb.model")
+  saveRDS(xgb, file="models/final_rawLENA_xgb_model.Rds")
 }
 
 #train_final_xgb_classifier(dat)
+xgb <- readRDS("models/final_rawLENA_xgb_model.Rds")
 
-# Train with each dataset left out
+# Train with each dataset left out, to see how much influence there is of particular datasets
+# (an indicator of how well we may expect to do on a new dataset)
 dset_left_out <- tibble()
 for(dset in unique(d$Dataset)) {
   d_nonaps <- d %>% filter(cds_ohs!="nap", Dataset!=dset) # train without dataset
@@ -212,4 +217,4 @@ dset_left_out
 # SOT Stanford    0.628 0.690
 
 # Decision Forest - overfits
-create_decision_forest(dd$train, dd$test, dd$cv)
+# create_decision_forest(dd$train, dd$test, dd$cv)

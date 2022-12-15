@@ -1,0 +1,123 @@
+---
+title: "Clustering LENA segments"
+author: "George"
+date: "3/30/2022"
+output: pdf_document
+keep_tex: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+require(tidyverse)
+library(here)
+require(kableExtra)
+
+load("data/combined_data_5min.Rdata")
+
+d_allfeat <- d
+
+# Remove fat_ed and mom_ed
+d$time = NULL
+#d$fat_ed = NULL
+#d$mom_ed = NULL
+
+source("two-class.R")
+dat <- add_features(d, with_demo=F, prop_meaningful=F, per_child_norms=F)
+dat$cds_ohs = d$cds_ohs
+
+plot_wss_vs_clusters <- function(dat_sc, title) {
+  wss <- (nrow(dat_sc)-1) * sum(apply(dat_sc,2,var))
+  for (i in 2:15) wss[i] <- sum(kmeans(dat_sc, iter.max=100, centers=i)$withinss)
+  plot(1:15, wss, type="b", xlab="Number of Clusters", main=title,
+       ylab="Within groups sum of squares")
+}
+
+# scale features
+all_dat_sc = scale(dat %>% dplyr::select(-cds_ohs)) 
+```
+
+Our basic approach is to 1) select the number of clusters ($k$) for $k$-means that looks justified for the segments, based only on LENA features, and then 2) to look at the proportion of sleep, tCDS, ODS in each of these clusters. 
+The key questions are: 1) Are there cluster(s) that correspond primarily to particular activity types (e.g., sleep)? and if so: 2) What do these clusters looks like, in terms of their average LENA features?
+
+```{r, echo=F, eval=F}
+set.seed(42)
+kfit <- kmeans(all_dat_sc, 7) 
+
+# append cluster assignment
+all_dat_cl <- with(kfit, data.frame(dat, cluster))
+save(all_dat_cl, file=here("data/all_clusters_raw_lena_5mins.Rdata"))
+```
+
+(Note: we used this within-groups sum of squares plot to pick 7 clusters, although here it changes every time as $k$-means is run again with a random seed. The 'elbow' often looks to be at $k=7$.)
+
+```{r, echo=F}
+load(here("data/all_clusters_raw_lena_5mins.Rdata"))
+plot_wss_vs_clusters(all_dat_sc, "") # "All segments" 6-7 clusters
+# saved in paper/clustered_segments.pdf / .png
+```
+
+
+Load clustered data.
+
+```{r table, echo=F}
+all_dat_cl <- all_dat_cl %>% 
+  mutate(nap = ifelse(cds_ohs=="nap", 1, 0),
+         cds = ifelse(cds_ohs==1, 1, 0),
+         ohs = ifelse(cds_ohs==0 | cds_ohs=="split", 1, 0),
+         #cluster = kfit$cluster
+        ) %>% dplyr::select(-cds_ohs)
+```
+
+Merge demographic data, mostly to check whether clusters differ much by language.
+
+```{r, echo=F}
+all_tab <- all_dat_cl %>% group_by(cluster) %>%
+  #relocate(cluster, .before=AWC) %>%
+  summarise(cluster = median(cluster), 
+            N = n(),
+            sleep = mean(nap),
+            tCDS = mean(cds),
+            ODS = mean(ohs),
+            AWC = mean(AWC),
+            CTC = mean(CTC),
+            CVC = mean(CVC),
+            noise = mean(noise),
+            silence = mean(silence),
+            distant = mean(distant),
+            TV = mean(tv),
+            meaningful = mean(meaningful)
+            ) %>%
+  mutate(cluster = as.factor(cluster))
+```
+
+Do our clusters all capture several children? (We wouldn't want clusters that only capture a few children, as these may be idiosyncratic and unlikely to generalize well to future datasets.)
+Below, we see that there are segments from 47-147 children in each cluster, with most clusters having >100 children represented.
+
+```{r, echo=F, message=F}
+children_cl <- d %>% mutate(cluster = all_dat_cl$cluster) %>% 
+  group_by(id, cluster) %>% 
+  summarise(N = n()) %>%
+  group_by(cluster) %>% 
+  summarise(Nclust=n()) 
+
+children_cl %>% kbl(caption = "Children represented per cluster.", booktabs=T)
+```
+
+What are the means of the LENA variables for each cluster?
+
+```{r, echo=F}
+#knitr::kable(all_tab %>% arrange(cds, ohs), digits=2, caption= "Means of LENA variables by cluster.")
+#apa_table(all_tab %>% arrange(cds, ohs), digits=2, caption= "Means of LENA variables by cluster.") 
+
+all_tab_reorder = all_tab[c(4,5, 6,1, 7,2,3),]
+
+#all_tab_reorder %>% arrange(desc(CDS), desc(ODS)) 
+all_tab_reorder %>%
+  kbl(caption = "Means of LENA variables by cluster.", booktabs=T, digits=2) %>%
+  #kable_classic(full_width = F, html_font = "Cambria") %>%
+  column_spec(3, bold=c(T,T,F,F,F,F,F)) %>%
+  column_spec(4, bold=c(F,F,T,T,F,F,F)) %>%
+  column_spec(5, bold=c(F,F,F,F,T,T,T)) %>%
+  column_spec(1, italic=T) 
+```
+

@@ -1,10 +1,12 @@
 ---
 title: "CDS ODS reliability"
-date: "August 2, 2021"
+date: "Dec 17, 2022"
 output:
   html_document: 
    toc: true
    toc_float: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -17,161 +19,42 @@ library(psych) # kappa
 ```
 
 
-# Data prep
 
-<!-- ## read in data -->
-<!-- ```{r} -->
-<!-- # wf -->
-<!-- wf <- read_excel("data_WF_withNAPS_ir_reliability.xlsx", sheet = "data_WF_withNAPS_ir_reliability") %>% -->
-<!--   dplyr::select(c(interrater, id, months_age, time, dur_min, AWC, CTC, CVC, cds_ohs)) %>% -->
-<!--   filter(interrater == 1) %>% -->
-<!--   mutate(study = "WF", -->
-<!--          language = "spanish") %>% -->
-<!--   rename("cds_ods_coder1" = "cds_ohs", -->
-<!--          "dur_5min" = "dur_min", "AWC_5min" = "AWC", "CTC_5min" = "CTC", "CVC_5min" = "CVC") -->
-
-<!-- # sot - outreach -->
-<!-- sot_outreach <- read_excel("data_SOT_Outreach_withNAPS_ir_reliability.xlsx", sheet = "data_SOT_Outreach_withNAPS") %>% -->
-<!--   dplyr::select(c(interrater, id, months_age, time, dur_min, AWC, CTC, CVC, cds_ohs)) %>% -->
-<!--   filter(interrater == 1) %>% -->
-<!--   mutate(study = "SOT_Outreach", -->
-<!--          language = "english") %>% -->
-<!--   rename("cds_ods_coder1" = "cds_ohs", -->
-<!--          "dur_5min" = "dur_min", "AWC_5min" = "AWC", "CTC_5min" = "CTC", "CVC_5min" = "CVC") -->
-
-<!-- # sot - stanford -->
-<!-- sot_stanford <- read_excel("data_SOT_Stanford_withNAPS_ir_reliability.xlsx", sheet = "data_SOT_Stanford_withNAPS") %>% -->
-<!--   dplyr::select(c(interrater, id, months_age, time, dur_min, AWC, CTC, CVC, cds_ohs)) %>% -->
-<!--   filter(interrater == 1) %>% -->
-<!--   mutate(study = "SOT_Stanford", -->
-<!--          language = "english") %>% -->
-<!--   rename("cds_ods_coder1" = "cds_ohs", -->
-<!--          "dur_5min" = "dur_min", "AWC_5min" = "AWC", "CTC_5min" = "CTC", "CVC_5min" = "CVC") -->
-
-
-<!-- # contx -->
-<!-- contx <- read_excel("data_contx_5min_and_10min_withNAPS_200820_ir_reliability.xlsx", sheet = "data_contx_5min_and_10min_withN") %>% -->
-<!--   dplyr::select(c(interrater, id, months_age, time, dur_5min, AWC_5min, CTC_5min, CVC_5min, cds_ohs, language)) %>% -->
-<!--   filter(interrater == 1) %>% -->
-<!--   mutate(study = "CONTX") %>% -->
-<!--   rename("cds_ods_coder1" = "cds_ohs") -->
-
-<!-- # combine all studies -->
-<!-- first_coders <- rbind(wf, sot_outreach, sot_stanford, contx) %>% -->
-<!--   dplyr::select(-interrater) -->
-<!-- write.csv(first_coders, "./data_reliability/first_coders.csv") -->
-<!-- ``` -->
-
-
-
-# Combine first and second coder info
-## create column with second coder criteria same for all studies
+## Read in data
 ```{r}
-# read in first coder data
-first_coders <- read.csv("./data_reliability/first_coders.csv") %>% 
-  dplyr::select(-X)
-
-# create coder 2 cds_ods column and combine with first coder
-coders <- read_excel("./data_reliability/CDS_ODS_tracking_revised_Sep52021.xlsx", sheet = "assigned") %>% 
-  rename("id" = "ID", "dur_5min" = "duration", "AWC_5min" = "AWC", "LENA_on_child" = "LENA on child") %>% 
-  mutate(cds_ods_coder2 = 
-                   ifelse(CDS_pct_of_AWC == "true 0", "0",
-                   ifelse(CDS_pct_of_AWC == "< 50%", "0", 
-                   ifelse(CDS_pct_of_AWC == "50-70%", 1, 
-                   ifelse(CDS_pct_of_AWC == "70% +", 1, "CHECK"))))) %>% 
-  full_join(first_coders, by = c("id", "study", "language", "time", "AWC_5min", "dur_5min"))
-str(coders)
-
-
-# number of rows matches each dataset
-coders_nrow <- coders %>% 
-  group_by(study) %>% 
-  count()
-coders_nrow
-```
-
-
-
-## create column for different second coder cds_ods coding for contx vs. wf + sots
-```{r}
-# contx only
-contx_firstcoder <- first_coders %>% 
-  filter(study == "CONTX")
-
-
-# create coder 2 cds_ods column and combine with first coder
-contx <- read_excel("./data_reliability/CDS_ODS_tracking_revised_Sep52021.xlsx", sheet = "assigned") %>% 
-  rename("id" = "ID", "dur_5min" = "duration", "AWC_5min" = "AWC", "LENA_on_child" = "LENA on child") %>% 
-  filter(study == "CONTX") %>% 
-  mutate(cds_ods_coder2 = 
-                   ifelse(CDS_pct_of_AWC == "true 0", "0",
-                   ifelse(CDS_pct_of_AWC == "< 50%", "0", 
-                   ifelse(CDS_pct_of_AWC == "50-70%", 0, 
-                   ifelse(CDS_pct_of_AWC == "70% +", 1, "CHECK"))))) %>% 
-  full_join(contx_firstcoder, by = c("id", "study", "language", "time", "AWC_5min", "dur_5min"))
-
-
-# wf and sot matching info
-first_coders_wf_sots <- first_coders %>% 
-  filter(study != "CONTX")
-
-
-# create df with contx, wf and sots
-coders_v2 <- read_excel("./data_reliability/CDS_ODS_tracking_revised_Sep52021.xlsx", sheet = "assigned") %>% 
-  filter(study != "CONTX") %>% 
-  rename("id" = "ID", "dur_5min" = "duration", "AWC_5min" = "AWC", "LENA_on_child" = "LENA on child") %>% 
-  mutate(cds_ods_coder2 = 
-                   ifelse(CDS_pct_of_AWC == "true 0", "0",
-                   ifelse(CDS_pct_of_AWC == "< 50%", "0", 
-                   ifelse(CDS_pct_of_AWC == "50-70%", 1, 
-                   ifelse(CDS_pct_of_AWC == "70% +", 1, "CHECK"))))) %>% 
-  full_join(first_coders_wf_sots, by = c("id", "study", "language", "time", "AWC_5min", "dur_5min")) %>% 
-  rbind(contx) %>% 
-  rename("cds_ods_coder2_v2" = "cds_ods_coder2") %>% 
-  dplyr::select(c(study, language, id, rectime, time, cds_ods_coder2_v2))
-
+coders_ir_rel <- read.csv("./data/coders_ir_rel.csv")
 
 ```
 
 
-## create final df with two versions of cds_ods coding
-```{r}
-coders <- coders %>% 
-  full_join(coders_v2, by = c("id", "study", "language", "rectime", "time")) %>% 
-  dplyr::select(c(id, study, language, rectime, time, dur_5min, AWC_5min, CDS_pct_of_AWC, LENA_on_child, 
-                  cds_ods_coder1, cds_ods_coder2, cds_ods_coder2_v2))
-
-```
-
-
-## exclude data: 1) splits [from rater1 coding] and 2) LENA off child for > 50%
+## Exclude data: 1) splits [from rater1 coding] and 2) LENA off child for > 50%
 ```{r}
 # exclude data
-coders_final <- coders %>% 
+coders_final <- coders_ir_rel %>% 
   filter(cds_ods_coder1 != "split") %>% 
   filter(LENA_on_child != "no >50%")
   
 # view excludes
 # splits
-df_split <- coders %>% 
+df_split <- coders_ir_rel %>% 
   filter(cds_ods_coder1 == "split")
 
 nrow(df_split)
 df_split %>% group_by(study) %>% count()
 
 # pct excluded
-pct_split <- (nrow(df_split)/nrow(coders))*100
+pct_split <- (nrow(df_split)/nrow(coders_ir_rel))*100
 pct_split
 
 # lena less than 50%
-df_lena_off_more_50pct <- coders %>% 
+df_lena_off_more_50pct <- coders_ir_rel %>% 
   filter(LENA_on_child == "no >50%")
 
 nrow(df_lena_off_more_50pct)
 df_lena_off_more_50pct %>% group_by(study) %>% count()
 
 # pct excluded
-pct_lenaoff50 <- (nrow(df_lena_off_more_50pct)/nrow(coders))*100
+pct_lenaoff50 <- (nrow(df_lena_off_more_50pct)/nrow(coders_ir_rel))*100
 pct_lenaoff50
 
 # total excluded
@@ -179,9 +62,8 @@ pct_split + pct_lenaoff50
 
 
 # table
-table(coders$cds_ods_coder1, coders$CDS_pct_of_AWC) 
-# 'split' segments are indeed mostly 50%+ CDS (25 / 37; 68%)
-table(coders$cds_ods_coder1, coders$CDS_pct_of_AWC)/ rowSums(table(coders$cds_ods_coder1, coders$CDS_pct_of_AWC))
+table(coders_ir_rel$cds_ods_coder1, coders_ir_rel$CDS_pct_of_AWC)
+table(coders_ir_rel$cds_ods_coder1, coders_ir_rel$CDS_pct_of_AWC)/ rowSums(table(coders_ir_rel$cds_ods_coder1, coders_ir_rel$CDS_pct_of_AWC))
 
 ```
 
@@ -189,121 +71,117 @@ table(coders$cds_ods_coder1, coders$CDS_pct_of_AWC)/ rowSums(table(coders$cds_od
 
 # Reliability
 
-## final data details
+## Final data details
 ```{r}
 # total kept
 nrow(coders_final)
 100 - (pct_split + pct_lenaoff50)
 
-# count by study
-coders_final_nrow <- coders_final %>% 
-  group_by(study) %>% 
-  count() %>% 
-  full_join(coders_nrow, by = "study") %>% 
-  rename("nrow_final" = "n.x", "nrow_full" = "n.y") %>% 
-  mutate(prop_final = nrow_final/nrow_full)
-coders_final_nrow
+
+# number of rows matches each dataset
+coders_nrow <- coders_final %>% 
+  group_by(study2) %>% 
+  count()
+coders_nrow
+
+
+# confusion matrix for all 
+table(coders_final$cds_ods_coder1, coders_final$cds_ods_coder2)
+table(coders_final$cds_ods_coder1, coders_final$cds_ods_coder2)/
+  rowSums(table(coders_final$cds_ods_coder1, coders_final$cds_ods_coder2))
+
+
+# confusion matrix - WF
+coders_final_wf <- coders_final %>% filter(study2 == "WF")
+
+table(coders_final_wf$cds_ods_coder1, coders_final_wf$cds_ods_coder2)
+table(coders_final_wf$cds_ods_coder1, coders_final_wf$cds_ods_coder2)/
+  rowSums(table(coders_final_wf$cds_ods_coder1, coders_final_wf$cds_ods_coder2))
+
+
+# confusion matrix - SOT - Outreach
+coders_final_sot_outreach <- coders_final %>% filter(study2 == "SOT_Outreach")
+
+table(coders_final_sot_outreach$cds_ods_coder1, coders_final_sot_outreach$cds_ods_coder2)
+table(coders_final_sot_outreach$cds_ods_coder1, coders_final_sot_outreach$cds_ods_coder2)/
+  rowSums(table(coders_final_sot_outreach$cds_ods_coder1, coders_final_sot_outreach$cds_ods_coder2))
+
+
+
+# confusion matrix - SOT - Stanford
+coders_final_sot_stanford <- coders_final %>% filter(study2 == "SOT_Stanford")
+
+table(coders_final_sot_stanford$cds_ods_coder1, coders_final_sot_stanford$cds_ods_coder2)
+table(coders_final_sot_stanford$cds_ods_coder1, coders_final_sot_stanford$cds_ods_coder2)/
+  rowSums(table(coders_final_sot_stanford$cds_ods_coder1, coders_final_sot_stanford$cds_ods_coder2))
+
+
+
+# confusion matrix - CONTX - english
+coders_final_contx_english <- coders_final %>% filter(study2 == "CONTX_english")
+
+table(coders_final_contx_english$cds_ods_coder1, coders_final_contx_english$cds_ods_coder2)
+table(coders_final_contx_english$cds_ods_coder1, coders_final_contx_english$cds_ods_coder2)/
+  rowSums(table(coders_final_contx_english$cds_ods_coder1, coders_final_contx_english$cds_ods_coder2))
+
+
+# confusion matrix - CONTX - spanish
+coders_final_contx_spanish <- coders_final %>% filter(study2 == "CONTX_spanish")
+
+table(coders_final_contx_spanish$cds_ods_coder1, coders_final_contx_spanish$cds_ods_coder2)
+table(coders_final_contx_spanish$cds_ods_coder1, coders_final_contx_spanish$cds_ods_coder2)/
+  rowSums(table(coders_final_contx_spanish$cds_ods_coder1, coders_final_contx_spanish$cds_ods_coder2))
+
+
 
 ```
 
 
-## coders_v1: proportion of matched codes
+## Proportion of matched codes
 ```{r}
 # create match column
 coders_final <- coders_final %>% 
   mutate(cds_ods_coder1 = as.numeric(cds_ods_coder1), 
-         cds_ods_coder2 = as.numeric(cds_ods_coder2), 
-         cds_ods_coder2_v2 = as.numeric(cds_ods_coder2_v2)) %>% 
-  mutate(match_v1 = ifelse(cds_ods_coder1 == cds_ods_coder2, "match", "mismatch"), 
-         match_v2 = ifelse(cds_ods_coder1 == cds_ods_coder2_v2, "match", "mismatch"))
+         cds_ods_coder2 = as.numeric(cds_ods_coder2)) %>% 
+  mutate(match = ifelse(cds_ods_coder1 == cds_ods_coder2, "match", "mismatch"))
 
-# count of match for version 1
+# count of match
 coders_final %>% 
-  group_by(match_v1) %>% 
-  count() %>% 
-  mutate(percent = n/nrow(coders_final))
-
-
-# count of match for version 2
-coders_final %>% 
-  group_by(match_v2) %>% 
+  group_by(match) %>% 
   count() %>% 
   mutate(percent = n/nrow(coders_final))
 
 
 # count of matches vs. mismatch - by STUDY
-prop_v1 <- coders_final %>% 
-  group_by(study, match_v1) %>% 
+prop <- coders_final %>% 
+  group_by(study2, match) %>% 
   count() %>% 
-  group_by(study) %>% 
-  mutate(study_n = sum(n)) %>% 
-  mutate(percent = n/study_n) %>% 
-  mutate(study = factor(study, levels = c("WF", "SOT_Outreach", "SOT_Stanford", "CONTX")))
-prop_v1
-
-prop_v2 <- coders_final %>% 
-  group_by(study, match_v2) %>% 
-  count() %>% 
-  group_by(study) %>% 
-  mutate(study_n = sum(n)) %>% 
-  mutate(percent = n/study_n) %>% 
-  mutate(study = factor(study, levels = c("WF", "SOT_Outreach", "SOT_Stanford", "CONTX")))
-prop_v2
-
-ggplot(prop_v1, aes(study, percent, fill = match_v1)) +
-  geom_col(position = "dodge") + theme_classic()
-
-ggplot(prop_v2, aes(study, percent, fill = match_v2)) +
-  geom_col(position = "dodge") + theme_classic()
+  group_by(study2) %>% 
+  mutate(study2_n = sum(n)) %>% 
+  mutate(percent = n/study2_n) %>% 
+  mutate(study2 = factor(study2, levels = c("WF", "SOT_Outreach", "SOT_Stanford", "CONTX_english", "CONTX_spanish")))
+prop
 
 
-ggplot(coders_final, aes(AWC_5min, fill = study)) + 
+ggplot(prop, aes(study2, percent, fill = match)) +
+  geom_col(position = "dodge")
+
+
+ggplot(coders_final, aes(AWC_5min, fill = study2)) + 
   geom_histogram() +
-  facet_wrap(~ match_v2, ncol = 1) + theme_classic()
+  facet_wrap(~ match, ncol = 1)
 
 ```
 
-
-
-## dfs of mismatch only in v2
-```{r}
-# CONTX
-contx_mismatch_v1 <- coders_final %>% 
-  filter(study == "CONTX" & match_v1 == "mismatch")
-
-contx_mismatch_v2 <- coders_final %>% 
-  filter(study == "CONTX" & match_v2 == "mismatch")
-
-# SOT
-sot_outreach_mismatch_v2 <- coders_final %>% 
-  filter(study == "SOT_Outreach" & match_v2 == "mismatch")
-
-sot_stanford_mismatch_v2 <- coders_final %>% 
-  filter(study == "SOT_Stanford" & match_v2 == "mismatch")
-
-# WF
-wf_mismatch_v2 <- coders_final %>% 
-  filter(study == "WF" & match_v2 == "mismatch")
-
-contx_mismatch_v2
-sot_outreach_mismatch_v2
-sot_stanford_mismatch_v2
-wf_mismatch_v2
-
-```
 
 
 
 ## ALL data
 ```{r}
-coders_final_kappa_v1 <- coders_final %>% 
+coders_final_kappa <- coders_final %>% 
   dplyr::select(c(cds_ods_coder1, cds_ods_coder2))
 
-coders_final_kappa_v2 <- coders_final %>% 
-  dplyr::select(c(cds_ods_coder1, cds_ods_coder2_v2))
-
-kappa2(coders_final_kappa_v1)
-kappa2(coders_final_kappa_v2)
+kappa2(coders_final_kappa)
 ```
 
 
@@ -322,7 +200,7 @@ kappa2(coders_final_kappa_noCONTX)
 ```{r}
 # we do not want weighted kappa; this takes into account disagreements, but weighted kappa is more relevant when data are rank ordered
 coders_final_kappa_wf <- coders_final %>% 
-  filter(study == "WF") %>% 
+  filter(study2 == "WF") %>% 
   dplyr::select(c(cds_ods_coder1, cds_ods_coder2))
   
 kappa2(coders_final_kappa_wf)
@@ -351,54 +229,32 @@ kappa2(coders_final_kappa_sotStanford)
 
 ## CONTX only
 ```{r}
-coders_final_kappa_CONTX_v1 <- coders_final %>% 
+coders_final_kappa_CONTX <- coders_final %>% 
   filter(study == "CONTX") %>% 
   dplyr::select(c(cds_ods_coder1, cds_ods_coder2))
 
-coders_final_kappa_CONTX_v2 <- coders_final %>% 
-  filter(study == "CONTX") %>% 
-  dplyr::select(c(cds_ods_coder1, cds_ods_coder2_v2))
-  
-kappa2(coders_final_kappa_CONTX_v1)
-kappa2(coders_final_kappa_CONTX_v2)
+
+kappa2(coders_final_kappa_CONTX)
+
 ```
 
 
-## Compare to Model Predictions
-
+## CONTX only - ENGLISH
 ```{r}
-# XGboost predictions from raw LENA features
-#xgb_pred <- read_csv("rawLENAxgb.csv") # all 12931
-xgb_pred <- read_csv("paper/xgb_preds_nonaps.csv")
-# random forest predictions
-#rf_pred <- read_csv("rf-predicted.csv") # only 9808 obs (the train data?)
+coders_final_kappa_CONTX_en <- coders_final %>% 
+  filter(study2 == "CONTX_english") %>% 
+  dplyr::select(c(cds_ods_coder1, cds_ods_coder2))
 
-
-# join by subject id, language, time (match study and age, too?)
-hum_vs_mod <- coders_final %>% left_join(xgb_pred)
-
-# model's binary predictions vs. original coders
-kappa2(hum_vs_mod %>% dplyr::select(cds_ods_coder1, CDSpred)) # .5  gold standard ?
-
-# model's binary predictions vs. new reliability coding
-kappa2(hum_vs_mod %>% dplyr::select(cds_ods_coder2, CDSpred)) # .38
-
-# reliability of all 3 (2 human, 1 model):
-kappam.fleiss(hum_vs_mod %>% dplyr::select(cds_ods_coder1, cds_ods_coder2, CDSpred)) # .47
-
-# reliability on just the 137/378 segments that the model has high confidence on:
-high_conf <- hum_vs_mod %>% filter(xgb_pred < .25 | xgb_pred > .75)
-kappam.fleiss(high_conf %>% dplyr::select(cds_ods_coder1, cds_ods_coder2, CDSpred)) # .68
-
-
-# ToDo: ordinally-ranked %CDS in humans vs. model
-hum_vs_mod$CDS_pct_of_AWC <- factor(hum_vs_mod$CDS_pct_of_AWC, 
-                                       levels=c("true 0","< 50%" , "50-70%" ,"70% +"))
-hum_vs_mod$CDS_pct_of_AWC <- as.numeric(hum_vs_mod$CDS_pct_of_AWC)
-with(hum_vs_mod, cor.test(CDS_pct_of_AWC, xgb_pred, method="spearman")) # .49
-#with(hum_vs_mod, plot(jitter(CDS_pct_of_AWC), xgb_pred)) 
-
-# reliability of model with original coders across entire dataset
-kappa2(xgb_pred %>% dplyr::select(CDSpred,cds_ohs)) # .42 
+kappa2(coders_final_kappa_CONTX_en)
 ```
 
+
+## CONTX only - SPANISH
+```{r}
+coders_final_kappa_CONTX_sp <- coders_final %>% 
+  filter(study2 == "CONTX_spanish") %>% 
+  dplyr::select(c(cds_ods_coder1, cds_ods_coder2))
+
+ 
+kappa2(coders_final_kappa_CONTX_sp)
+```

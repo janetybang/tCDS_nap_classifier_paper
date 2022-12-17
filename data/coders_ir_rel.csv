@@ -1,0 +1,384 @@
+,id,study,study2,language,rectime,time,dur_5min,AWC_5min,CDS_pct_of_AWC,LENA_on_child,cds_ods_coder1,cds_ods_coder2
+1,5623,WF,WF,spanish,1504,19.3,4.97,75,50-70%,yes,1,1
+2,5623,WF,WF,spanish,1802,19.35,5,43,70% +,yes,1,1
+3,5623,WF,WF,spanish,2102,19.4,5,119,50-70%,yes,1,1
+4,5623,WF,WF,spanish,2402,19.45,5,21,70% +,yes,1,1
+5,5623,WF,WF,spanish,2702,19.5,5,281,< 50%,yes,0,0
+6,5623,WF,WF,spanish,7802,21.15,5,109,70% +,yes,1,1
+7,5623,WF,WF,spanish,8102,21.2,5,13,70% +,yes,1,1
+8,5623,WF,WF,spanish,8402,21.25,5,40,70% +,no <50%,1,1
+9,5623,WF,WF,spanish,8702,21.3,5,157,70% +,yes,1,1
+10,5623,WF,WF,spanish,9002,21.35,5,17,70% +,yes,1,1
+11,5623,WF,WF,spanish,9302,21.4,5,102,50-70%,yes,1,1
+12,5623,WF,WF,spanish,9602,21.45,5,15,70% +,yes,1,1
+13,5623,WF,WF,spanish,9902,21.5,5,56,70% +,yes,1,1
+14,5623,WF,WF,spanish,10202,21.55,5,73,< 50%,yes,1,0
+15,5623,WF,WF,spanish,10502,22,5,97,< 50%,yes,1,0
+16,5624,WF,WF,spanish,7449,11.45,5,0,< 50%,yes,1,0
+17,5624,WF,WF,spanish,7749,11.5,5,8,50-70%,yes,1,1
+18,5624,WF,WF,spanish,8049,11.55,5,25,< 50%,yes,1,0
+19,5624,WF,WF,spanish,8349,12,5,0,70% +,yes,1,1
+20,5624,WF,WF,spanish,8649,12.05,5,31,70% +,yes,1,1
+21,5624,WF,WF,spanish,14949,13.5,5,14,< 50%,yes,1,0
+22,5624,WF,WF,spanish,15249,13.55,5,13,< 50%,yes,0,0
+23,5624,WF,WF,spanish,15549,14,5,0,< 50%,yes,0,0
+24,5624,WF,WF,spanish,15849,14.05,5,29,< 50%,yes,1,0
+25,5624,WF,WF,spanish,16149,14.1,5,14,70% +,yes,1,1
+26,5624,WF,WF,spanish,23649,16.15,5,3,70% +,yes,1,1
+27,5624,WF,WF,spanish,23949,16.2,5,36,70% +,yes,split,1
+28,5624,WF,WF,spanish,24249,16.25,5,4,70% +,yes,1,1
+29,5624,WF,WF,spanish,24549,16.3,5,21,70% +,yes,0,1
+30,5624,WF,WF,spanish,24849,16.35,5,14,70% +,yes,1,1
+31,5857,WF,WF,spanish,7247,11.55,5,11,70% +,yes,1,1
+32,5857,WF,WF,spanish,7547,12,5,35,70% +,yes,1,1
+33,5857,WF,WF,spanish,7847,12.05,5,22,< 50%,yes,0,0
+34,5857,WF,WF,spanish,8147,12.1,5,50,70% +,yes,1,1
+35,5857,WF,WF,spanish,8447,12.15,5,37,70% +,yes,1,1
+36,5857,WF,WF,spanish,27947,17.4,5,0,true 0,yes,1,0
+37,5857,WF,WF,spanish,28247,17.45,5,60,< 50%,yes,1,0
+38,5857,WF,WF,spanish,28547,17.5,5,143,50-70%,yes,split,1
+39,5857,WF,WF,spanish,28847,17.55,5,170,< 50%,yes,1,0
+40,5857,WF,WF,spanish,29147,18,5,363,< 50%,yes,0,0
+41,5857,WF,WF,spanish,39047,20.45,5,149,70% +,yes,1,1
+42,5857,WF,WF,spanish,39347,20.5,5,565,70% +,yes,1,1
+43,5857,WF,WF,spanish,39647,20.55,5,184,50-70%,yes,1,1
+44,5857,WF,WF,spanish,39947,21,5,29,70% +,yes,1,1
+45,5857,WF,WF,spanish,40247,21.05,5,152,< 50%,yes,1,0
+46,6230,WF,WF,spanish,14448,12.25,5,189,70% +,yes,1,1
+47,6230,WF,WF,spanish,14748,12.3,5,322,< 50%,yes,0,0
+48,6230,WF,WF,spanish,15048,12.35,5,188,70% +,yes,1,1
+49,6230,WF,WF,spanish,15348,12.4,5,124,< 50%,yes,split,0
+50,6230,WF,WF,spanish,15648,12.45,5,203,< 50%,yes,0,0
+51,6230,WF,WF,spanish,24394,18,5,137,70% +,yes,1,1
+52,6230,WF,WF,spanish,24694,18.05,5,256,70% +,yes,1,1
+53,6230,WF,WF,spanish,24994,18.1,5,305,50-70%,yes,split,1
+54,6230,WF,WF,spanish,25294,18.15,5,110,50-70%,yes,split,1
+55,6230,WF,WF,spanish,25594,18.2,5,157,< 50%,yes,0,0
+56,6230,WF,WF,spanish,28894,19.15,5,209,< 50%,yes,split,0
+57,6230,WF,WF,spanish,29194,19.2,5,289,< 50%,yes,0,0
+58,6230,WF,WF,spanish,29494,19.25,5,582,< 50%,yes,0,0
+59,6230,WF,WF,spanish,29794,19.3,5,347,< 50%,yes,split,0
+60,6230,WF,WF,spanish,30094,19.35,5,447,< 50%,yes,0,0
+61,6275,WF,WF,spanish,4482,11.25,5,0,true 0,yes,0,0
+62,6275,WF,WF,spanish,4782,11.3,5,0,true 0,yes,0,0
+63,6275,WF,WF,spanish,5082,11.35,5,0,true 0,yes,0,0
+64,6275,WF,WF,spanish,5382,11.4,5,3,< 50%,yes,0,0
+65,6275,WF,WF,spanish,5682,11.45,5,4,< 50%,yes,0,0
+66,6275,WF,WF,spanish,6882,12.05,5,0,true 0,yes,0,0
+67,6275,WF,WF,spanish,7182,12.1,5,37,70% +,yes,split,1
+68,6275,WF,WF,spanish,7482,12.15,5,12,70% +,yes,split,1
+69,6275,WF,WF,spanish,7782,12.2,5,10,70% +,yes,split,1
+70,6275,WF,WF,spanish,8082,12.25,5,7,50-70%,yes,1,1
+71,6275,WF,WF,spanish,16224,14.55,5,3,< 50%,yes,0,0
+72,6275,WF,WF,spanish,16524,15,5,66,< 50%,yes,split,0
+73,6275,WF,WF,spanish,16824,15.05,5,0,true 0,yes,0,0
+74,6275,WF,WF,spanish,17124,15.1,5,0,true 0,yes,0,0
+75,6275,WF,WF,spanish,17424,15.15,5,0,true 0,yes,0,0
+76,6367,SOT_Stanford,SOT_Stanford,english,2457,9.2,5,167,70% +,yes,1,1
+77,6367,SOT_Stanford,SOT_Stanford,english,2757,9.25,5,187,70% +,yes,1,1
+78,6367,SOT_Stanford,SOT_Stanford,english,3057,9.3,5,138,70% +,yes,1,1
+79,6367,SOT_Stanford,SOT_Stanford,english,3357,9.35,5,308,70% +,yes,1,1
+80,6367,SOT_Stanford,SOT_Stanford,english,3657,9.4,5,97,70% +,yes,1,1
+81,6367,SOT_Stanford,SOT_Stanford,english,12957,12.15,5,90,70% +,yes,1,1
+82,6367,SOT_Stanford,SOT_Stanford,english,13257,12.2,5,234,70% +,yes,1,1
+83,6367,SOT_Stanford,SOT_Stanford,english,13557,12.25,5,139,70% +,yes,1,1
+84,6367,SOT_Stanford,SOT_Stanford,english,13857,12.3,5,337,70% +,yes,1,1
+85,6367,SOT_Stanford,SOT_Stanford,english,14157,12.35,5,104,70% +,no >50%,0,1
+86,6367,SOT_Stanford,SOT_Stanford,english,35157,18.25,5,40,70% +,yes,1,1
+87,6367,SOT_Stanford,SOT_Stanford,english,35457,18.3,5,84,70% +,yes,1,1
+88,6367,SOT_Stanford,SOT_Stanford,english,35757,18.35,5,130,70% +,yes,0,1
+89,6367,SOT_Stanford,SOT_Stanford,english,36057,18.4,5,204,70% +,yes,1,1
+90,6367,SOT_Stanford,SOT_Stanford,english,36357,18.45,5,120,70% +,yes,1,1
+91,6367,SOT_Stanford,SOT_Stanford,english,36657,18.5,5,0,70% +,no >50%,NA,1
+92,6367,SOT_Stanford,SOT_Stanford,english,36957,18.55,5,208,70% +,no >50%,NA,1
+93,6367,SOT_Stanford,SOT_Stanford,english,37257,19,5,260,70% +,no >50%,NA,1
+94,6367,SOT_Stanford,SOT_Stanford,english,37557,19.05,5,214,70% +,no >50%,NA,1
+95,6368,SOT_Stanford,SOT_Stanford,english,7362,9.15,5,108,70% +,yes,1,1
+96,6368,SOT_Stanford,SOT_Stanford,english,7662,9.2,5,0,70% +,yes,1,1
+97,6368,SOT_Stanford,SOT_Stanford,english,7962,9.25,5,17,70% +,yes,split,1
+98,6368,SOT_Stanford,SOT_Stanford,english,8262,9.3,5,35,70% +,yes,split,1
+99,6368,SOT_Stanford,SOT_Stanford,english,8562,9.35,5,90,70% +,yes,1,1
+100,6368,SOT_Stanford,SOT_Stanford,english,22962,13.35,5,67,< 50%,yes,0,0
+101,6368,SOT_Stanford,SOT_Stanford,english,23262,13.4,5,114,< 50%,yes,1,0
+102,6368,SOT_Stanford,SOT_Stanford,english,23562,13.45,5,235,50-70%,no <50%,0,1
+103,6368,SOT_Stanford,SOT_Stanford,english,23862,13.5,5,372,50-70%,no <50%,1,1
+104,6368,SOT_Stanford,SOT_Stanford,english,24162,13.55,5,180,70% +,no >50%,1,1
+105,6368,SOT_Stanford,SOT_Stanford,english,36162,17.15,5,172,50-70%,no <50%,1,1
+106,6368,SOT_Stanford,SOT_Stanford,english,36462,17.2,5,81,70% +,no >50%,1,1
+107,6368,SOT_Stanford,SOT_Stanford,english,36762,17.25,5,336,70% +,yes,1,1
+108,6368,SOT_Stanford,SOT_Stanford,english,37062,17.3,5,43,70% +,yes,1,1
+109,6368,SOT_Stanford,SOT_Stanford,english,37362,17.35,5,0,true 0,yes,0,0
+110,6433,SOT_Stanford,SOT_Stanford,english,1994,7.15,5,91,70% +,yes,1,1
+111,6433,SOT_Stanford,SOT_Stanford,english,2294,7.2,5,30,70% +,yes,1,1
+112,6433,SOT_Stanford,SOT_Stanford,english,2594,7.25,5,102,70% +,yes,1,1
+113,6433,SOT_Stanford,SOT_Stanford,english,2894,7.3,5,25,70% +,yes,1,1
+114,6433,SOT_Stanford,SOT_Stanford,english,3194,7.35,5,3,70% +,yes,1,1
+115,6433,SOT_Stanford,SOT_Stanford,english,16094,11.1,5,36,< 50%,yes,split,0
+116,6433,SOT_Stanford,SOT_Stanford,english,16394,11.15,5,11,70% +,yes,1,1
+117,6433,SOT_Stanford,SOT_Stanford,english,16694,11.2,5,37,70% +,yes,1,1
+118,6433,SOT_Stanford,SOT_Stanford,english,16994,11.25,5,22,70% +,yes,split,1
+119,6433,SOT_Stanford,SOT_Stanford,english,17294,11.3,5,75,< 50%,yes,split,0
+120,6433,SOT_Stanford,SOT_Stanford,english,40094,17.5,5,8,70% +,yes,1,1
+121,6433,SOT_Stanford,SOT_Stanford,english,40394,17.55,5,7,70% +,yes,split,1
+122,6433,SOT_Stanford,SOT_Stanford,english,40694,18,5,39,70% +,yes,1,1
+123,6433,SOT_Stanford,SOT_Stanford,english,40994,18.05,5,38,70% +,yes,split,1
+124,6433,SOT_Stanford,SOT_Stanford,english,41294,18.1,5,30,50-70%,yes,1,1
+125,6446,SOT_Stanford,SOT_Stanford,english,7124,16.25,5,19,70% +,yes,1,1
+126,6446,SOT_Stanford,SOT_Stanford,english,7424,16.3,5,91,70% +,yes,1,1
+127,6446,SOT_Stanford,SOT_Stanford,english,7724,16.35,5,11,50-70%,yes,1,1
+128,6446,SOT_Stanford,SOT_Stanford,english,8024,16.4,5,0,70% +,yes,0,1
+129,6446,SOT_Stanford,SOT_Stanford,english,8324,16.45,5,31,70% +,yes,1,1
+130,6446,SOT_Stanford,SOT_Stanford,english,21954,13.2,5,3,true 0,yes,1,0
+131,6446,SOT_Stanford,SOT_Stanford,english,22254,13.25,5,0,true 0,yes,0,0
+132,6446,SOT_Stanford,SOT_Stanford,english,22554,13.3,5,0,70% +,yes,0,1
+133,6446,SOT_Stanford,SOT_Stanford,english,22854,13.35,5,27,70% +,yes,1,1
+134,6446,SOT_Stanford,SOT_Stanford,english,23154,13.4,5,10,70% +,yes,1,1
+135,6446,SOT_Stanford,SOT_Stanford,english,41754,18.5,5,21,70% +,yes,1,1
+136,6446,SOT_Stanford,SOT_Stanford,english,42054,18.55,5,28,70% +,yes,1,1
+137,6446,SOT_Stanford,SOT_Stanford,english,42354,19,5,153,70% +,yes,1,1
+138,6446,SOT_Stanford,SOT_Stanford,english,42654,19.05,5,122,70% +,yes,1,1
+139,6446,SOT_Stanford,SOT_Stanford,english,42954,19.1,5,92,70% +,yes,0,1
+140,6953,SOT_Stanford,SOT_Stanford,english,2894,8.25,5,28,50-70%,yes,1,1
+141,6953,SOT_Stanford,SOT_Stanford,english,3194,8.3,5,47,< 50%,yes,1,0
+142,6953,SOT_Stanford,SOT_Stanford,english,3494,8.35,5,15,< 50%,yes,1,0
+143,6953,SOT_Stanford,SOT_Stanford,english,3794,8.4,5,32,70% +,yes,1,1
+144,6953,SOT_Stanford,SOT_Stanford,english,4094,8.45,5,2,70% +,yes,1,1
+145,6953,SOT_Stanford,SOT_Stanford,english,16694,12.15,5,8,70% +,yes,1,1
+146,6953,SOT_Stanford,SOT_Stanford,english,16994,12.2,5,28,70% +,yes,1,1
+147,6953,SOT_Stanford,SOT_Stanford,english,17294,12.25,5,13,70% +,no >50%,1,1
+148,6953,SOT_Stanford,SOT_Stanford,english,17594,12.3,5,26,70% +,no >50%,1,1
+149,6953,SOT_Stanford,SOT_Stanford,english,17894,12.35,5,0,70% +,no >50%,1,1
+150,6953,SOT_Stanford,SOT_Stanford,english,41294,19.05,5,16,< 50%,yes,0,0
+151,6953,SOT_Stanford,SOT_Stanford,english,41594,19.1,5,60,70% +,yes,1,1
+152,6953,SOT_Stanford,SOT_Stanford,english,41894,19.15,5,41,70% +,no >50%,1,1
+153,6953,SOT_Stanford,SOT_Stanford,english,42194,19.2,5,155,70% +,no >50%,1,1
+154,6953,SOT_Stanford,SOT_Stanford,english,42494,19.25,5,198,70% +,no >50%,1,1
+155,20007,SOT_Outreach,SOT_Outreach,english,6885,11.55,5,146,50-70%,yes,0,1
+156,20007,SOT_Outreach,SOT_Outreach,english,7185,12,5,126,70% +,yes,0,1
+157,20007,SOT_Outreach,SOT_Outreach,english,7485,12.05,5,0,70% +,yes,0,1
+158,20007,SOT_Outreach,SOT_Outreach,english,7785,12.1,5,87,70% +,yes,0,1
+159,20007,SOT_Outreach,SOT_Outreach,english,8085,12.15,5,104,50-70%,yes,0,1
+160,20007,SOT_Outreach,SOT_Outreach,english,18285,15.05,5,11,70% +,yes,split,1
+161,20007,SOT_Outreach,SOT_Outreach,english,18585,15.1,5,0,70% +,yes,0,1
+162,20007,SOT_Outreach,SOT_Outreach,english,18885,15.15,5,44,70% +,yes,split,1
+163,20007,SOT_Outreach,SOT_Outreach,english,19185,15.2,5,37,70% +,yes,1,1
+164,20007,SOT_Outreach,SOT_Outreach,english,19485,15.25,5,94,< 50%,yes,0,0
+165,20007,SOT_Outreach,SOT_Outreach,english,20685,15.45,5,46,70% +,yes,split,1
+166,20007,SOT_Outreach,SOT_Outreach,english,20985,15.5,5,17,70% +,yes,0,1
+167,20007,SOT_Outreach,SOT_Outreach,english,21285,15.55,5,40,70% +,yes,1,1
+168,20007,SOT_Outreach,SOT_Outreach,english,21585,16,5,222,< 50%,yes,0,0
+169,20007,SOT_Outreach,SOT_Outreach,english,21885,16.05,5,82,< 50%,yes,split,0
+170,20056,SOT_Outreach,SOT_Outreach,english,4785,8.4,5,243,70% +,yes,split,1
+171,20056,SOT_Outreach,SOT_Outreach,english,5085,8.45,5,521,70% +,yes,1,1
+172,20056,SOT_Outreach,SOT_Outreach,english,5385,8.5,5,437,70% +,yes,1,1
+173,20056,SOT_Outreach,SOT_Outreach,english,5685,8.55,5,107,70% +,yes,1,1
+174,20056,SOT_Outreach,SOT_Outreach,english,5985,9,5,15,< 50%,yes,0,0
+175,20056,SOT_Outreach,SOT_Outreach,english,15585,11.4,5,690,< 50%,yes,0,0
+176,20056,SOT_Outreach,SOT_Outreach,english,15885,11.45,5,347,< 50%,yes,split,0
+177,20056,SOT_Outreach,SOT_Outreach,english,16185,11.5,5,355,50-70%,yes,split,1
+178,20056,SOT_Outreach,SOT_Outreach,english,16485,11.55,5,170,70% +,yes,1,1
+179,20056,SOT_Outreach,SOT_Outreach,english,16785,12,5,222,70% +,yes,1,1
+180,20056,SOT_Outreach,SOT_Outreach,english,26195,17.05,5,486,< 50%,yes,0,0
+181,20056,SOT_Outreach,SOT_Outreach,english,26495,17.1,5,613,< 50%,yes,0,0
+182,20056,SOT_Outreach,SOT_Outreach,english,26795,17.15,5,811,< 50%,yes,0,0
+183,20056,SOT_Outreach,SOT_Outreach,english,27095,17.2,5,578,50-70%,yes,split,1
+184,20056,SOT_Outreach,SOT_Outreach,english,27395,17.25,5,437,< 50%,yes,split,0
+185,20073,SOT_Outreach,SOT_Outreach,english,9290,17.4,5,66,70% +,yes,1,1
+186,20073,SOT_Outreach,SOT_Outreach,english,9590,17.45,5,144,70% +,yes,1,1
+187,20073,SOT_Outreach,SOT_Outreach,english,9890,17.5,5,22,50-70%,yes,1,1
+188,20073,SOT_Outreach,SOT_Outreach,english,10190,17.55,5,111,< 50%,yes,0,0
+189,20073,SOT_Outreach,SOT_Outreach,english,10490,18,5,22,< 50%,yes,0,0
+190,20073,SOT_Outreach,SOT_Outreach,english,23226,13.5,5,107,< 50%,yes,0,0
+191,20073,SOT_Outreach,SOT_Outreach,english,23526,13.55,5,63,70% +,yes,1,1
+192,20073,SOT_Outreach,SOT_Outreach,english,23826,14,5,65,70% +,yes,1,1
+193,20073,SOT_Outreach,SOT_Outreach,english,24126,14.05,5,86,70% +,yes,1,1
+194,20073,SOT_Outreach,SOT_Outreach,english,24426,14.1,5,130,70% +,yes,1,1
+195,20073,SOT_Outreach,SOT_Outreach,english,33065,8.05,4.183333333,14,70% +,yes,1,1
+196,20073,SOT_Outreach,SOT_Outreach,english,33316,8.1,5,10,70% +,yes,1,1
+197,20073,SOT_Outreach,SOT_Outreach,english,33616,8.15,5,140,< 50%,yes,0,0
+198,20073,SOT_Outreach,SOT_Outreach,english,33916,8.2,5,148,70% +,yes,1,1
+199,20073,SOT_Outreach,SOT_Outreach,english,34216,8.25,5,64,70% +,yes,1,1
+200,20108,SOT_Outreach,SOT_Outreach,english,2879,9.45,5,268,< 50%,yes,split,0
+201,20108,SOT_Outreach,SOT_Outreach,english,3179,9.5,5,37,50-70%,yes,1,1
+202,20108,SOT_Outreach,SOT_Outreach,english,3479,9.55,5,80,70% +,yes,1,1
+203,20108,SOT_Outreach,SOT_Outreach,english,3779,10,5,33,70% +,yes,1,1
+204,20108,SOT_Outreach,SOT_Outreach,english,4079,10.05,5,61,70% +,yes,split,1
+205,20108,SOT_Outreach,SOT_Outreach,english,10079,11.45,5,58,70% +,yes,1,1
+206,20108,SOT_Outreach,SOT_Outreach,english,10379,11.5,5,72,70% +,yes,1,1
+207,20108,SOT_Outreach,SOT_Outreach,english,10679,11.55,5,331,50-70%,yes,split,1
+208,20108,SOT_Outreach,SOT_Outreach,english,10979,12,5,167,70% +,yes,1,1
+209,20108,SOT_Outreach,SOT_Outreach,english,11279,12.05,5,10,< 50%,yes,0,0
+210,20108,SOT_Outreach,SOT_Outreach,english,28079,16.45,5,118,< 50%,yes,split,0
+211,20108,SOT_Outreach,SOT_Outreach,english,28379,16.5,5,56,< 50%,yes,split,0
+212,20108,SOT_Outreach,SOT_Outreach,english,28679,16.55,5,59,50-70%,yes,0,1
+213,20108,SOT_Outreach,SOT_Outreach,english,28979,17,5,28,70% +,yes,1,1
+214,20108,SOT_Outreach,SOT_Outreach,english,29279,17.05,5,63,70% +,yes,split,1
+215,20041,SOT_Outreach,SOT_Outreach,english,3855,9.35,5,70,70% +,yes,split,1
+216,20041,SOT_Outreach,SOT_Outreach,english,4155,9.4,5,115,50-70%,yes,1,1
+217,20041,SOT_Outreach,SOT_Outreach,english,4455,9.45,5,84,50-70%,yes,split,1
+218,20041,SOT_Outreach,SOT_Outreach,english,4755,9.5,5,160,50-70%,yes,0,1
+219,20041,SOT_Outreach,SOT_Outreach,english,5055,9.55,5,267,< 50%,yes,0,0
+220,20041,SOT_Outreach,SOT_Outreach,english,13455,12.15,5,160,50-70%,yes,split,1
+221,20041,SOT_Outreach,SOT_Outreach,english,13755,12.2,5,138,70% +,yes,split,1
+222,20041,SOT_Outreach,SOT_Outreach,english,14055,12.25,5,163,70% +,yes,1,1
+223,20041,SOT_Outreach,SOT_Outreach,english,14355,12.3,5,62,< 50%,yes,0,0
+224,20041,SOT_Outreach,SOT_Outreach,english,14655,12.35,5,12,< 50%,yes,0,0
+225,20041,SOT_Outreach,SOT_Outreach,english,36720,19.5,5,76,70% +,yes,0,1
+226,20041,SOT_Outreach,SOT_Outreach,english,37020,19.55,5,71,< 50%,yes,0,0
+227,20041,SOT_Outreach,SOT_Outreach,english,37320,20,5,204,70% +,yes,1,1
+228,20041,SOT_Outreach,SOT_Outreach,english,37620,20.05,5,57,< 50%,yes,0,0
+229,20041,SOT_Outreach,SOT_Outreach,english,37920,20.1,5,29,70% +,yes,0,1
+230,20007,CONTX,CONTX_english,english,1154,14.35,5,46,50-70%,yes,0,1
+231,20007,CONTX,CONTX_english,english,1454,14.4,5,66,< 50%,yes,0,0
+232,20007,CONTX,CONTX_english,english,1754,14.45,5,195,< 50%,yes,0,0
+233,20007,CONTX,CONTX_english,english,2054,14.5,5,105,< 50%,yes,0,0
+234,20007,CONTX,CONTX_english,english,7305,11.25,5,191,50-70%,yes,0,1
+235,20007,CONTX,CONTX_english,english,7605,11.3,5,157,50-70%,yes,0,1
+236,20007,CONTX,CONTX_english,english,8978,13.25,5,101,70% +,yes,1,1
+237,20007,CONTX,CONTX_english,english,9278,13.3,5,58,50-70%,yes,1,1
+238,20007,CONTX,CONTX_english,english,11463,14.1,5,175,< 50%,yes,0,0
+239,20007,CONTX,CONTX_english,english,11763,14.15,5,121,< 50%,yes,0,0
+240,20007,CONTX,CONTX_english,english,13563,14.45,5,78,50-70%,yes,1,1
+241,20007,CONTX,CONTX_english,english,13863,14.5,5,23,< 50%,yes,1,0
+242,20007,CONTX,CONTX_english,english,14163,14.55,5,224,< 50%,yes,0,0
+243,20007,CONTX,CONTX_english,english,14463,15,5,28,< 50%,yes,0,0
+244,20007,CONTX,CONTX_english,english,15191,15.3,5,103,< 50%,yes,1,0
+245,20007,CONTX,CONTX_english,english,15491,15.35,5,46,50-70%,yes,1,1
+246,20122,CONTX,CONTX_english,english,13457,9.4,5,110,70% +,yes,1,1
+247,20122,CONTX,CONTX_english,english,13757,9.45,5,110,70% +,yes,1,1
+248,20122,CONTX,CONTX_english,english,14657,10,5,98,< 50%,yes,1,0
+249,20122,CONTX,CONTX_english,english,14957,10.05,5,119,70% +,yes,1,1
+250,20122,CONTX,CONTX_english,english,17957,10.55,5,307,70% +,yes,1,1
+251,20122,CONTX,CONTX_english,english,18257,11,5,246,70% +,yes,1,1
+252,20122,CONTX,CONTX_english,english,20657,11.4,5,259,< 50%,yes,0,0
+253,20122,CONTX,CONTX_english,english,20957,11.45,5,103,< 50%,yes,0,0
+254,20122,CONTX,CONTX_english,english,23057,12.2,5,448,< 50%,yes,0,0
+255,20122,CONTX,CONTX_english,english,23357,12.25,5,304,50-70%,yes,0,1
+256,20122,CONTX,CONTX_english,english,23657,12.3,5,100,50-70%,yes,1,1
+257,20122,CONTX,CONTX_english,english,23957,12.35,5,129,70% +,yes,1,1
+258,20122,CONTX,CONTX_english,english,27557,13.35,5,151,70% +,yes,1,1
+259,20122,CONTX,CONTX_english,english,27857,13.4,5,76,< 50%,yes,1,0
+260,20122,CONTX,CONTX_english,english,28157,13.45,5,126,< 50%,yes,0,0
+261,20122,CONTX,CONTX_english,english,28457,13.5,5,106,< 50%,yes,0,0
+262,20176,CONTX,CONTX_english,english,4227,9.4,5,424,< 50%,yes,0,0
+263,20176,CONTX,CONTX_english,english,4527,9.45,5,459,< 50%,yes,0,0
+264,20176,CONTX,CONTX_english,english,9027,11,5,301,70% +,yes,1,1
+265,20176,CONTX,CONTX_english,english,9327,11.05,5,225,50-70%,yes,1,1
+266,20176,CONTX,CONTX_english,english,15627,12.5,5,95,70% +,yes,1,1
+267,20176,CONTX,CONTX_english,english,15927,12.55,5,229,70% +,yes,1,1
+268,20176,CONTX,CONTX_english,english,18927,13.45,5,170,< 50%,yes,0,0
+269,20176,CONTX,CONTX_english,english,19227,13.5,5,358,< 50%,yes,0,0
+270,20176,CONTX,CONTX_english,english,22827,14.5,5,308,70% +,yes,0,1
+271,20176,CONTX,CONTX_english,english,23127,14.55,5,750,70% +,yes,0,1
+272,20176,CONTX,CONTX_english,english,39627,19.3,5,434,< 50%,yes,0,0
+273,20176,CONTX,CONTX_english,english,39927,19.35,5,399,< 50%,yes,0,0
+274,20176,CONTX,CONTX_english,english,42627,20.2,5,133,50-70%,yes,0,1
+275,20176,CONTX,CONTX_english,english,42927,20.25,5,320,NA,no >50%,0,NA
+276,20176,CONTX,CONTX_english,english,43227,20.3,5,291,NA,no >50%,0,NA
+277,20176,CONTX,CONTX_english,english,43527,20.35,5,366,70% +,no <50%,0,1
+278,20191,CONTX,CONTX_english,english,10676,16.4,5,57,70% +,yes,1,1
+279,20191,CONTX,CONTX_english,english,10976,16.45,5,0,50-70%,yes,1,1
+280,20191,CONTX,CONTX_english,english,11576,16.55,5,9,< 50%,yes,1,0
+281,20191,CONTX,CONTX_english,english,11876,17,5,27,50-70%,yes,1,1
+282,20191,CONTX,CONTX_english,english,12476,17.1,5,19,< 50%,yes,0,0
+283,20191,CONTX,CONTX_english,english,12776,17.15,5,33,< 50%,yes,0,0
+284,20191,CONTX,CONTX_english,english,13376,17.25,5,33,70% +,yes,1,1
+285,20191,CONTX,CONTX_english,english,13676,17.3,5,275,70% +,yes,1,1
+286,20191,CONTX,CONTX_english,english,14276,17.4,5,39,70% +,yes,1,1
+287,20191,CONTX,CONTX_english,english,14576,17.45,5,84,70% +,yes,1,1
+288,20191,CONTX,CONTX_english,english,24276,15.55,5,148,70% +,yes,1,1
+289,20191,CONTX,CONTX_english,english,24576,16,5,65,70% +,yes,1,1
+290,20191,CONTX,CONTX_english,english,25176,16.1,5,46,< 50%,yes,0,0
+291,20191,CONTX,CONTX_english,english,25476,16.15,5,111,< 50%,yes,0,0
+292,20191,CONTX,CONTX_english,english,26376,16.3,5,26,70% +,yes,1,1
+293,20191,CONTX,CONTX_english,english,26676,16.35,5,5,< 50%,yes,1,0
+294,20236,CONTX,CONTX_english,english,632,9,5,233,70% +,yes,1,1
+295,20236,CONTX,CONTX_english,english,932,9.05,5,232,70% +,yes,1,1
+296,20236,CONTX,CONTX_english,english,3332,9.45,5,169,70% +,yes,1,1
+297,20236,CONTX,CONTX_english,english,3632,9.5,5,266,70% +,yes,1,1
+298,20236,CONTX,CONTX_english,english,9932,11.35,5,175,70% +,yes,1,1
+299,20236,CONTX,CONTX_english,english,10232,11.4,5,193,50-70%,yes,1,1
+300,20236,CONTX,CONTX_english,english,10532,11.45,5,354,< 50%,yes,0,0
+301,20236,CONTX,CONTX_english,english,10832,11.5,5,263,50-70%,yes,0,1
+302,20236,CONTX,CONTX_english,english,17486,19.45,5,144,< 50%,yes,0,0
+303,20236,CONTX,CONTX_english,english,17786,19.5,5,256,< 50%,yes,0,0
+304,20236,CONTX,CONTX_english,english,27928,19.25,5,298,< 50%,yes,1,0
+305,20236,CONTX,CONTX_english,english,28228,19.3,5,280,70% +,yes,1,1
+306,20236,CONTX,CONTX_english,english,29428,19.5,5,287,70% +,yes,1,1
+307,20236,CONTX,CONTX_english,english,29728,19.55,5,79,50-70%,yes,1,1
+308,20236,CONTX,CONTX_english,english,30628,20.1,5,148,70% +,yes,1,1
+309,20236,CONTX,CONTX_english,english,30928,20.15,5,191,70% +,yes,1,1
+310,7473,CONTX,CONTX_spanish,spanish,0,10.45,2.23,141,70% +,yes,1,1
+311,7473,CONTX,CONTX_spanish,spanish,134,10.5,5,213,70% +,yes,1,1
+312,7473,CONTX,CONTX_spanish,spanish,1034,11.05,5,435,70% +,yes,1,1
+313,7473,CONTX,CONTX_spanish,spanish,1334,11.1,5,272,70% +,yes,1,1
+314,7473,CONTX,CONTX_spanish,spanish,16376,8.4,5,334,70% +,yes,1,1
+315,7473,CONTX,CONTX_spanish,spanish,16676,8.45,5,331,70% +,yes,1,1
+316,7473,CONTX,CONTX_spanish,spanish,35576,14,5,442,70% +,yes,1,1
+317,7473,CONTX,CONTX_spanish,spanish,35876,14.05,5,276,70% +,yes,1,1
+318,7473,CONTX,CONTX_spanish,spanish,36176,14.1,5,236,70% +,yes,0,1
+319,7473,CONTX,CONTX_spanish,spanish,36476,14.15,5,357,70% +,yes,0,1
+320,7473,CONTX,CONTX_spanish,spanish,42587,8.5,5,300,70% +,yes,0,1
+321,7473,CONTX,CONTX_spanish,spanish,42887,8.55,5,448,70% +,yes,0,1
+322,7473,CONTX,CONTX_spanish,spanish,43787,9.1,5,322,70% +,yes,1,1
+323,7473,CONTX,CONTX_spanish,spanish,44087,9.15,5,459,70% +,yes,1,1
+324,7473,CONTX,CONTX_spanish,spanish,56087,12.35,5,219,< 50%,yes,0,0
+325,7473,CONTX,CONTX_spanish,spanish,56387,12.4,5,252,< 50%,yes,0,0
+326,7499,CONTX,CONTX_spanish,spanish,156,9.25,5,293,70% +,yes,1,1
+327,7499,CONTX,CONTX_spanish,spanish,391,10.2,5,24,70% +,yes,1,1
+328,7499,CONTX,CONTX_spanish,spanish,1656,9.5,5,250,70% +,yes,1,1
+329,7499,CONTX,CONTX_spanish,spanish,1786,8.45,5,21,70% +,yes,1,1
+330,7499,CONTX,CONTX_spanish,spanish,34881,8.5,5,314,70% +,yes,1,1
+331,7499,CONTX,CONTX_spanish,spanish,35181,8.55,5,238,70% +,yes,1,1
+332,7499,CONTX,CONTX_spanish,spanish,47781,12.25,5,197,70% +,yes,1,1
+333,7499,CONTX,CONTX_spanish,spanish,48081,12.3,5,184,70% +,yes,1,1
+334,7499,CONTX,CONTX_spanish,spanish,49581,12.55,5,286,< 50%,yes,1,0
+335,7499,CONTX,CONTX_spanish,spanish,49881,13,5,165,70% +,yes,1,1
+336,7499,CONTX,CONTX_spanish,spanish,54981,14.25,5,424,70% +,yes,1,1
+337,7499,CONTX,CONTX_spanish,spanish,55281,14.3,5,267,70% +,yes,1,1
+338,7508,CONTX,CONTX_spanish,spanish,2877,12.35,5,160,70% +,yes,1,1
+339,7508,CONTX,CONTX_spanish,spanish,3177,12.4,5,149,70% +,yes,1,1
+340,7508,CONTX,CONTX_spanish,spanish,17460,11.25,5,173,70% +,yes,1,1
+341,7508,CONTX,CONTX_spanish,spanish,17760,11.3,5,122,70% +,yes,1,1
+342,7508,CONTX,CONTX_spanish,spanish,22560,12.5,5,210,70% +,yes,0,1
+343,7508,CONTX,CONTX_spanish,spanish,22860,12.55,5,156,50-70%,yes,0,1
+344,7508,CONTX,CONTX_spanish,spanish,25918,9.15,2.35,197,50-70%,yes,1,1
+345,7508,CONTX,CONTX_spanish,spanish,26059,9.2,5,121,50-70%,yes,1,1
+346,7508,CONTX,CONTX_spanish,spanish,35940,14.15,5,169,< 50%,yes,0,0
+347,7508,CONTX,CONTX_spanish,spanish,36240,14.2,5,156,< 50%,yes,0,0
+348,7508,CONTX,CONTX_spanish,spanish,37740,14.45,5,140,50-70%,yes,0,1
+349,7508,CONTX,CONTX_spanish,spanish,38040,14.5,5,173,50-70%,yes,0,1
+350,7508,CONTX,CONTX_spanish,spanish,55600,20.3,5,146,50-70%,yes,1,1
+351,7508,CONTX,CONTX_spanish,spanish,55900,20.35,5,146,70% +,yes,1,1
+352,7508,CONTX,CONTX_spanish,spanish,56800,20.5,5,279,< 50%,yes,0,0
+353,7508,CONTX,CONTX_spanish,spanish,57100,20.55,5,164,< 50%,yes,0,0
+354,7791,CONTX,CONTX_spanish,spanish,2807,14.15,5,435,70% +,yes,1,1
+355,7791,CONTX,CONTX_spanish,spanish,3107,14.2,5,410,70% +,yes,1,1
+356,7791,CONTX,CONTX_spanish,spanish,3407,14.25,5,247,50-70%,yes,1,1
+357,7791,CONTX,CONTX_spanish,spanish,3707,14.3,5,589,< 50%,yes,1,0
+358,7791,CONTX,CONTX_spanish,spanish,13428,17.4,5,435,< 50%,yes,1,0
+359,7791,CONTX,CONTX_spanish,spanish,13728,17.45,5,416,< 50%,yes,1,0
+360,7791,CONTX,CONTX_spanish,spanish,20928,19.45,5,647,70% +,yes,1,1
+361,7791,CONTX,CONTX_spanish,spanish,21228,19.5,5,374,< 50%,yes,1,0
+362,7791,CONTX,CONTX_spanish,spanish,21528,19.55,5,412,50-70%,yes,1,1
+363,7791,CONTX,CONTX_spanish,spanish,21828,20,5,631,70% +,yes,1,1
+364,7791,CONTX,CONTX_spanish,spanish,30589,11.2,5,476,< 50%,yes,0,0
+365,7791,CONTX,CONTX_spanish,spanish,30889,11.25,5,270,50-70%,yes,0,1
+366,7791,CONTX,CONTX_spanish,spanish,35989,12.5,5,288,70% +,yes,1,1
+367,7791,CONTX,CONTX_spanish,spanish,36289,12.55,5,335,70% +,yes,1,1
+368,7812,CONTX,CONTX_spanish,spanish,13047,10.55,5,395,70% +,yes,1,1
+369,7812,CONTX,CONTX_spanish,spanish,13347,11,5,234,70% +,yes,1,1
+370,7812,CONTX,CONTX_spanish,spanish,16647,11.55,5,362,50-70%,yes,1,1
+371,7812,CONTX,CONTX_spanish,spanish,16947,12,5,403,< 50%,yes,1,0
+372,7812,CONTX,CONTX_spanish,spanish,17247,12.05,5,271,50-70%,yes,1,1
+373,7812,CONTX,CONTX_spanish,spanish,17547,12.1,5,514,< 50%,yes,1,0
+374,7812,CONTX,CONTX_spanish,spanish,27868,10.15,5,478,70% +,yes,1,1
+375,7812,CONTX,CONTX_spanish,spanish,28168,10.2,5,265,70% +,yes,1,1
+376,7812,CONTX,CONTX_spanish,spanish,29668,10.45,5,368,70% +,yes,0,1
+377,7812,CONTX,CONTX_spanish,spanish,29968,10.5,5,442,70% +,yes,0,1
+378,7812,CONTX,CONTX_spanish,spanish,30868,11.05,5,322,70% +,yes,1,1
+379,7812,CONTX,CONTX_spanish,spanish,31168,11.1,5,476,70% +,yes,1,1
+380,7812,CONTX,CONTX_spanish,spanish,33868,11.55,5,534,70% +,yes,1,1
+381,7812,CONTX,CONTX_spanish,spanish,34168,12,5,312,70% +,yes,1,1
+382,7812,CONTX,CONTX_spanish,spanish,45044,11.3,5,381,50-70%,yes,0,1
+383,7812,CONTX,CONTX_spanish,spanish,45344,11.35,5,423,50-70%,yes,0,1

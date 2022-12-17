@@ -1,0 +1,140 @@
+---
+title: "tCDS vs ODS plot"
+author: "Janet Bang"
+date: "October 29, 2022"
+output:
+  html_document: 
+   toc: true
+   toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE}
+library(knitr)
+opts_chunk$set(echo=TRUE, 
+               warning=FALSE, message=FALSE, 
+               cache=FALSE)
+```
+
+## Load libraries
+```{r}
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(gridExtra)
+library(ggpubr)
+```
+
+
+
+## Read in data
+```{r}
+data <- read_csv("./data/data_WF_withNAPS_210307.csv") %>%
+  mutate(cds_ods = ifelse(cds_ohs == 1, "tCDS", 
+                   ifelse(cds_ohs == 0, "ODS", 
+                   ifelse(cds_ohs == "split", "ODS", # coded all splits as ODS 
+                   ifelse(cds_ohs == "naps", "sleep", "CHECK"))))) %>% 
+  dplyr::select(-c(cds_ohs)) %>% 
+  mutate(cds_ods = factor(cds_ods, levels = c("tCDS", "ODS", "sleep")))
+```
+
+
+
+# Figure 1: Profile of AWC in 3 different children
+```{r}
+# original colors before changing to print-friendly version: "#F8766D","#00BFC4", "grey"
+
+id1 <- data %>% 
+  filter(id == 6213)
+
+
+id1_avg <- id1 %>% 
+  ungroup() %>% 
+  mutate(cds_ods = factor(cds_ods)) %>% 
+  group_by(cds_ods) %>% 
+  mutate(awc_avg = mean(AWC)) %>% 
+  distinct(cds_ods, awc_avg)
+id1_avg
+
+id1_plot <- ggplot(id1, aes(time2, AWC)) + 
+  theme_minimal() + 
+  geom_point(aes(fill = cds_ods), size = 6, shape = 21) + 
+  geom_line(size = .5) + 
+  theme(text = element_text(size = 30)) +  
+  labs(title = "Child 1", x = "Time", y = "AWC \n (5-min seg)", fill = "Code by Human Listener") +  
+  scale_fill_manual(values = c("#007478", "#FAA49E", "white")) +
+  geom_hline(yintercept = 55.5, color = "#007478", size = 2) + 
+  geom_hline(yintercept = 49.3, color = "#FAA49E", size = 2) + 
+  theme(legend.position = "none")
+  
+id1_plot
+ggsave("./figures/awc_allday_dots_ex1.pdf", width = 20, height = 10, units = "in")
+
+
+# 5634 - 4 -5 hr gap 
+
+
+id2 <- data %>% 
+  filter(id == 5624) %>% 
+  mutate(cds_ods = recode(cds_ods, "tCDS" = "tCDS", "ODS" = "ODS", 
+                           "split" = "ODS", "sleep" = "sleep")) %>% 
+  mutate(cds_ods = factor(cds_ods, levels = c("tCDS", "ODS", "split", "sleep")))
+
+id2_avg <- id2 %>% 
+  ungroup() %>% 
+  mutate(cds_ods = factor(cds_ods)) %>% 
+  group_by(cds_ods) %>% 
+  mutate(awc_avg = mean(AWC)) %>% 
+  distinct(cds_ods, awc_avg)
+id2_avg
+
+id2_plot <- ggplot(id2, aes(time2, AWC)) + 
+  theme_minimal() + 
+  geom_point(aes(fill = cds_ods), size = 6, shape = 21) + 
+  geom_line(size = .5) + 
+  theme(text = element_text(size = 30)) +  
+  labs(title = "Child 2",x = "Time", y = "AWC \n (5-min seg)", fill = "Code by Human Listener") +  
+  scale_fill_manual(values = c("#007478", "#FAA49E", "white")) +
+  geom_hline(yintercept = 20.4, color = "#007478", size = 2) + 
+  geom_hline(yintercept = 23.5, color = "#FAA49E", size = 2) + 
+  theme(legend.position = "none")
+
+id2_plot
+ggsave("./figures/awc_allday_dots_ex2.pdf", width = 20, height = 10, units = "in")
+
+
+# 5857
+id3 <- data %>% 
+  filter(id == 5857) %>% 
+  mutate(cds_ods = recode(cds_ods, "tCDS" = "tCDS", "ODS" = "ODS", 
+                           "split" = "ODS", "sleep" = "sleep")) %>% 
+  mutate(cds_ods = factor(cds_ods, levels = c("tCDS", "ODS", "split", "sleep")))
+
+id3_avg <- id3 %>% 
+  ungroup() %>% 
+  mutate(cds_ods = factor(cds_ods)) %>% 
+  group_by(cds_ods) %>% 
+  mutate(awc_avg = mean(AWC)) %>% 
+  distinct(cds_ods, awc_avg)
+id3_avg
+
+id3_plot <- ggplot(id3, aes(time2, AWC)) + 
+  theme_minimal() + 
+  geom_point(aes(fill = cds_ods), size = 6, shape = 21) + 
+  geom_line(size = .5) + 
+  theme(text = element_text(size = 30)) +  
+  labs(title = "Child 3", x = "Time", y = "AWC \n (5-min seg)", fill = "Code by Human Listener") +  
+  scale_fill_manual(values = c("#007478", "#FAA49E", "white")) +
+  geom_hline(yintercept = 99.5, color = "#007478", size = 2) + 
+  geom_hline(yintercept = 134, color = "#FAA49E", size = 2) + 
+  theme(legend.position = "none")
+
+id3_plot
+ggsave("./figures/awc_allday_dots_ex3.pdf", width = 20, height = 10, units = "in")
+
+
+ggarrange(id1_plot, id2_plot, id3_plot, ncol = 1, common.legend = T, legend = "top")
+ggsave("./figures/awc_allday_dots_n3.pdf", width = 20, height = 18, units = "in")
+
+```

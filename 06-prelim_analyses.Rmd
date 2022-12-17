@@ -1,0 +1,236 @@
+---
+title: "tCDS/ODS Logistic Regressions"
+author: "Janet Bang"
+date: "March 16, 2020"
+output:
+  html_document: 
+   toc: true
+   toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, echo=FALSE}
+library(knitr)
+opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE, cache=FALSE)
+```
+
+## Load libraries
+```{r}
+library(tidyverse)
+library(readxl)
+library(psych)
+library(gridExtra)
+library(lme4)
+library(emmeans)
+library(sjPlot)
+library(MuMIn)
+
+
+give.n <- function(x){
+  return(c(y = mean(x), label = length(x)))
+}
+```
+
+
+## Read in data
+```{r}
+data <- read_csv("./data/data.csv") %>% 
+    mutate(AWC_ratemin = AWC/dur_min, 
+           CTC_ratemin = CTC/dur_min, 
+           CVC_ratemin = CVC/dur_min) 
+```
+
+
+# Number of observations per family
+```{r}
+freq <- data %>% 
+  group_by(id, cds_ohs) %>% 
+  tally()
+
+ggplot(freq, aes(n, fill = cds_ohs)) + 
+  geom_density(alpha = .5) + 
+  labs(x = "number of 5-minute segments")
+
+freq %>% 
+  ungroup() %>% 
+  group_by(cds_ohs) %>% 
+  summarise(mean = mean(n),
+            mdn = median(n),
+            sd = sd(n), 
+            min = min(n), 
+            max = max(n))
+```
+
+
+
+# Proportion of observations per family
+```{r}
+num_obs <- data %>% 
+  group_by(id, cds_ohs) %>% 
+  count() %>% 
+  ungroup() %>% 
+  group_by(id) %>% 
+  mutate(total = sum(n), 
+         prop = n/total)
+
+ggplot(num_obs, aes(x = prop, fill = cds_ohs)) + 
+  geom_density(alpha = .5)
+# ggsave("./figures/density_plot_prop_cds_ohs_split.pdf")
+
+num_obs %>% 
+  ungroup() %>% 
+  group_by(cds_ohs) %>% 
+  summarise(mean = mean(prop),
+            mdn = median(prop),
+            sd = sd(prop), 
+            min = min(prop), 
+            max = max(prop))
+```
+
+
+
+# Figure 2: Boxplots of AWC, CTC, or CVC
+In BUCLD descriptive plots, we took out splits and sleep, but the model treated splits as ODS. Therefore, for the final paper we decided to treat splits as sleep in the plots as well.
+```{r}
+data2 <- data %>% 
+  rename("cds_ods" = "cds_ohs") %>% 
+  mutate(cds_ods2 = ifelse(cds_ods == 1, "tCDS", "ODS"), 
+         cds_ods2 = factor(cds_ods2, levels = c("tCDS", "ODS")))
+
+
+awc_2categories <- ggplot(data2, aes(cds_ods2, AWC, fill = cds_ods2)) + 
+  theme_minimal() + 
+  geom_jitter(alpha = .05) + 
+  geom_boxplot(alpha = .9) + 
+  theme(text = element_text(size = 20), 
+        axis.title.y=element_text(angle=0, vjust = .5)) + 
+  labs(x = "", y = "AWC \n(5-min)\nsegments") +  
+  scale_fill_manual(values = c("#F8766D", "#00BFC4")) + 
+  theme(legend.position = "none") 
+
+awc_2categories
+ggsave("./figures/boxplot_awc_ms.pdf", width = 6, height = 8, units = "in")
+
+
+ctc_2categories <- ggplot(data2, aes(cds_ods2, CTC, fill = cds_ods2)) + 
+  theme_minimal() + 
+  geom_jitter(alpha = .05) + 
+  geom_boxplot(alpha = .9) + 
+  theme(text = element_text(size = 20), 
+        axis.title.y=element_text(angle=0, vjust = .5)) + 
+  labs(x = "", y = "CTC \n(5-min\nsegments)") +  
+  scale_fill_manual(values = c("#F8766D","#00BFC4")) + 
+  theme(legend.position = "none") 
+
+ctc_2categories
+ggsave("./figures/boxplot_ctc_ms.pdf", width = 6, height = 8, units = "in")
+
+
+cvc_2categories <- ggplot(data2, aes(cds_ods2, CVC, fill = cds_ods2)) + 
+  theme_minimal() + 
+  geom_jitter(alpha = .05) + 
+  geom_boxplot(alpha = .9) + 
+  theme(text = element_text(size = 20), 
+        axis.title.y=element_text(angle=0, vjust = .5)) + 
+  labs(x = "", y = "CVC \n(5-min\nsegments)") +  
+  scale_fill_manual(values = c("#F8766D", "#00BFC4")) + 
+  theme(legend.position = "none") 
+
+cvc_2categories
+ggsave("./figures/boxplot_cvc_ms.pdf", width = 6, height = 8, units = "in")
+
+pdf("./figures/boxplot_awc_ctc_cvc_2categ_ms.pdf", width = 12, height = 6) # Open a new pdf file
+grid.arrange(awc_2categories, ctc_2categories, cvc_2categories, ncol = 3)
+dev.off() # closes file
+
+```
+
+
+
+# Predicting CDS or not from AWC and CTC values - standardizing within participant
+```{r}
+# standardizing individual observations within participant: this ensures that everyone's value is the same relative distance from their own mean
+data_log <- data2 %>% 
+  mutate(cds_ods3 = ifelse(cds_ods == 1, 1, 0)) %>% 
+  group_by(id) %>%
+  mutate(cds_ods3 = factor(cds_ods3), 
+         AWC_rate_cntr_indiv = scale(AWC_ratemin), 
+         CTC_rate_cntr_indiv = scale(CTC_ratemin), 
+         CVC_rate_cntr_indiv = scale(CVC_ratemin))
+
+
+
+
+p1_corr <- ggplot(data_log, aes(AWC_rate_cntr_indiv, CTC_rate_cntr_indiv)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
+p2_corr <- ggplot(data_log, aes(AWC_rate_cntr_indiv, CVC_rate_cntr_indiv)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
+p3_corr <- ggplot(data_log, aes(CTC_rate_cntr_indiv, CVC_rate_cntr_indiv)) + 
+  geom_point() + 
+  geom_smooth(method = "lm")
+grid.arrange(p1_corr, p2_corr, p3_corr, ncol = 3)
+
+
+
+# models
+m_int <- glmer(cds_ods3 ~ 1 + 
+             (1 | id), 
+           data = data_log, 
+           family = binomial,
+           control = glmerControl(optimizer = "bobyqa"))
+
+m_awc <- glmer(cds_ods3 ~ AWC_rate_cntr_indiv + 
+             (1 | id), 
+           data = data_log, 
+           family = binomial,
+           control = glmerControl(optimizer = "bobyqa"))
+
+m_awc_ctc <- glmer(cds_ods3 ~ AWC_rate_cntr_indiv + CTC_rate_cntr_indiv + 
+             (1 | id), 
+           data = data_log, 
+           family = binomial,
+           control = glmerControl(optimizer = "bobyqa"))
+
+m_awc_ctc_cvc <- glmer(cds_ods3 ~ AWC_rate_cntr_indiv + CTC_rate_cntr_indiv +  CVC_rate_cntr_indiv +
+             (1 | id), 
+           data = data_log, 
+           family = binomial,
+           control = glmerControl(optimizer = "bobyqa"))
+
+
+# testing role of awc, ctc, and cvc
+anova(m_int, m_awc, m_awc_ctc, m_awc_ctc_cvc)
+
+summary(m_awc_ctc_cvc)
+
+confint(m_awc_ctc_cvc)
+
+
+
+# odds ratio
+plot_model(m_awc_ctc_cvc, vline.color = "red", order.terms = c(1,2, 3), 
+           show.values = T)
+
+
+
+# predicted probabilities
+theme_set(theme_grey(base_size = 40))
+
+p <- plot_model(m_awc_ctc_cvc, type = "pred", 
+           title = "")
+p_awc <- p[[1]] + scale_y_continuous(limits = c(0, 1))
+p_ctc <- p[[2]] + scale_y_continuous(limits = c(0, 1))
+p_cvc <- p[[3]] + scale_y_continuous(limits = c(0, 1))
+
+ggsave("./figures/m_awc_ctc_cvc_predictionAWC_ms.pdf", plot = p_awc, height = 8, width = 8, units = "in")
+ggsave("./figures/m_awc_ctc_cvc_predictionCTC_ms.pdf", plot = p_ctc, height = 8, width = 8, units = "in")
+ggsave("./figures/m_awc_ctc_cvc_predictionCVC_ms.pdf", plot = p_cvc, height = 8, width = 8, units = "in")
+
+
+
+# diagnostics
+plot_model(m_awc_ctc_cvc, type = "diag")
+```

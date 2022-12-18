@@ -1,9 +1,10 @@
 require(here)
 
-d <- read.csv(here("data/data_WF_withNAPS_210307.csv"), header=T, stringsAsFactors = F) # 2567 5-min segments from 29 families
-d$Dataset = "WF" # Weisleder & Fernald (2013)
-d$language = "spanish" # 29 Spanish-speaking families from Weisleder & Fernald
-d$Sleep = NULL
+d <- read.csv(here("data/data_WF_withNAPS_210307.csv"), header=T, stringsAsFactors = F) %>% # 2567 5-min segments from 29 families
+  mutate(Dataset = "WF", # Weisleder & Fernald (2013)
+         language = "spanish", # 29 Spanish-speaking families
+         Sleep = NULL) %>% 
+  dplyr::select(-mom_ed, -fat_ed, -hi, -hour, -minutes, -minutes_prop, -time2)
 
 #d2 <- read.csv(here("data/data_contx.csv"), header=T, stringsAsFactors=F) # 1279 10-min segments from 90 subjects
 # original CONTX: 1279 10-min segments
@@ -33,26 +34,25 @@ cor(d2$distant_5min, d2$distant_10min) # .933
 
 # let's sub in the 5-min segments in place of the 10-min segments
 d2 <- d25 %>% #filter(cds_ohs!="nap") %>% 
-  dplyr::select(-rectime, -X, -segment_num, -contx_inc) %>%
+  dplyr::select(-rectime, -X, -segment_num, -contx_inc, -hi, -fat_ed, -mom_ed) %>%
   dplyr::select(-contains("_10min")) %>%
   rename(AWC = AWC_5min, CTC = CTC_5min, CVC = CVC_5min,
          noise_min = noise_5min, silence_min = silence_5min, distant_min = distant_5min,
-         meaningful_min = meaningful_5min, tv_min = tv_5min, dur_min = dur_5min)
+         meaningful_min = meaningful_5min, tv_min = tv_5min, dur_min = dur_5min) %>%
+  mutate(Dataset = "CONTX")
 
 # check columns
-intersect(names(d), names(d2)) # 17 shared
-setdiff(names(d), names(d2)) # Sleep / Dataset
-setdiff(names(d2), names(d)) #  language
-# Janet: 6 or 7 families without fat_ed data
-
+intersect(names(d), names(d2)) # 16 shared
+setdiff(names(d), names(d2)) 
+setdiff(names(d2), names(d)) 
 
 table(d2$language)
 
-d2$Dataset = "CONTX"
 
-d4 <- read.csv(here("data/data_SOT_Outreach_withNAPS_210307.csv"), header=T, stringsAsFactors = F)
-d4$language = "english"
-d4$Dataset = "SOT Outreach"
+d4 <- read.csv(here("data/data_SOT_Outreach_withNAPS_210307.csv"), header=T, stringsAsFactors = F) %>%
+  mutate(language="english",
+         Dataset = "SOT Outreach") %>%
+  dplyr::select(-mom_ed, -fat_ed, -hi, -Sleep)
 d4$Sleep = NULL
 # n = 29 kids at 17 - 19months -- this sample repeats with the CONTX sample, 
 # but the kids are younger. also, we have a couple of kids where they were sampled on two different days and this changes their age e.g., from 17 to 18 months. 
@@ -68,10 +68,9 @@ d$language = as.factor(d$language)
 # ..see how badly we do without CTC? 
 
 # adding third dataset - "the Stanford families" 27 18-month-olds, full-day recording
-d3 <- read.csv(here("data/data_SOT_Stanford_withNAPS_210307.csv"), header=T, stringsAsFactors = F)
-# fat_ed is NA
-d3$language = "english" 
-d3$Dataset = "SOT Stanford"
+d3 <- read.csv(here("data/data_SOT_Stanford_withNAPS_210307.csv"), header=T, stringsAsFactors = F) %>%
+  mutate(language="english",
+         Dataset = "SOT Outreach")
 d3$Sleep = NULL
 intersect(names(d3), names(d)) # SOT is already coded in the same way
 setdiff(names(d3), names(d)) # time, mom_ed

@@ -16,10 +16,7 @@ load("data/combined_data_5min.Rdata")
 
 d_allfeat <- d
 
-# Remove fat_ed and mom_ed
 d$time = NULL
-#d$fat_ed = NULL
-#d$mom_ed = NULL
 
 source("two-class.R")
 dat <- add_features(d, with_demo=F, prop_meaningful=F, per_child_norms=F)

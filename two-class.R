@@ -28,11 +28,7 @@ add_features <- function(full, with_demo=T, prop_meaningful=T, per_child_norms=T
              #CTCxCVC = propCTC*propCVC,
              #AWCxCVC = propAWC*propCVC) 
   } else {
-    # add some combinations..
-    #daf <- daf %>% 
-    #  mutate(AWCxCTC = AWC*CTC,
-    #         CTCxCVC = CTC*CVC,
-    #         AWCxCVC = AWC*CVC) 
+    # feature combinations?
   }
   
   daf <- daf %>% dplyr::select(-meaningful_min)
@@ -61,7 +57,7 @@ add_features <- function(full, with_demo=T, prop_meaningful=T, per_child_norms=T
   if(with_demo) {
     dat <- dplyr::select(daf, -id) 
   } else{ # without demographic vars
-    dat <- dplyr::select(daf, -id, -months_age, -sex, -hi, -language, -Dataset, -mom_ed, -fat_ed) 
+    dat <- dplyr::select(daf, -id, -months_age, -sex, -language, -Dataset) 
   }
   
   return(dat)
@@ -138,7 +134,7 @@ do_child_level_cv <- function(dat, fname='', k=5) {
     geom_label(aes(label=paste0("Mean AUC: ", round(mean(auc), 2)), x=.5, y=.2) )
   #geom_segment(x = 1, xend=0, y=0, yend=1, color='gray') + # messed up due to reversed x-axis
   #geom_abline(slope=1, yintercept=0, color="gray") +
-  ggsave(file=paste0("xgb-multiROC-",fname,".pdf"), width=3.5, height=3.5)
+  ggsave(file=paste0("figs/xgb-multiROC-",fname,".pdf"), width=3.5, height=3.5)
   
   # try to shade lower right triangle?
   # annotate("rect", xmin = 0, xmax = 1, ymin = 0, ymax = 1, alpha = .5)
@@ -151,8 +147,6 @@ do_child_level_cv <- function(dat, fname='', k=5) {
 
 # use just raw LENA features
 create_decision_forest <- function(train, test, cv, seed=42) {
-  train$fat_ed = NULL # several NAs
-  train$hi = NULL # a few NAs
   train$months_age = NULL
   train$language = NULL
   train$cds_ohs = as.factor(train$cds_ohs)
@@ -177,8 +171,6 @@ create_decision_forest <- function(train, test, cv, seed=42) {
               tv = mean(tv) )
               #propCVC=mean(propCVC), propCTC=mean(propCTC), propAWC = mean(propAWC))
   
-  test$fat_ed = NULL # several NAs
-  test$hi = NULL # a few NAs
   test$months_age = NULL
   test$language = NULL
   test$cds_ohs = as.factor(test$cds_ohs)
@@ -228,7 +220,7 @@ create_single_tree <- function(train, test, cv, seed=42, save.plot=T, show.plot=
   tree.preds = predict(tree.model, test)[,2]
   tree.roc_obj <- roc(test[,cds_ohs], tree.preds)
   #cat("Tree AUC ", auc(tree.roc_obj)) 
-  if(save.plot) pdf(paste0("treeROC-",ncol(train)-1,".pdf"), width=3.5, height=3.5)
+  if(save.plot) pdf(paste0("figs/treeROC-",ncol(train)-1,".pdf"), width=3.5, height=3.5)
   if(show.plot) plot(tree.roc_obj)
   if(show.plot) text(x=.5, y=.1, paste0("AUC = ",round(auc(tree.roc_obj), 3))) 
   if(save.plot) dev.off()
@@ -265,7 +257,7 @@ create_xgboost_model <- function(train, test, cv, fname='', seed=42, graph=T) {
   
   if(graph) {
     if(fname=='') fname = ncol(train)-1
-    pdf(paste0("xgbROC-",fname,".pdf"), width=3.5, height=3.5)
+    pdf(paste0("figs/xgbROC-",fname,".pdf"), width=3.5, height=3.5)
     plot(xgb.roc_obj)
     text(x=.5, y=.1, paste0("AUC = ",round(auc(xgb.roc_obj), 3))) 
     dev.off()
@@ -273,7 +265,7 @@ create_xgboost_model <- function(train, test, cv, fname='', seed=42, graph=T) {
     #### XGB importance
     col_names = attr(xgb.train.data, ".Dimnames")[[2]]
     imp = xgb.importance(col_names, xgb.model)
-    pdf(paste0("xgb-importance-",fname,".pdf"), width=6, height=6)
+    pdf(paste0("figs/xgb-importance-",fname,".pdf"), width=6, height=6)
     xgb.plot.importance(imp)
     dev.off()
     

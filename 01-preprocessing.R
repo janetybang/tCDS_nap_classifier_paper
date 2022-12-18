@@ -53,7 +53,6 @@ d4 <- read.csv(here("data/data_SOT_Outreach_withNAPS_210307.csv"), header=T, str
   mutate(language="english",
          Dataset = "SOT Outreach") %>%
   dplyr::select(-mom_ed, -fat_ed, -hi, -Sleep)
-d4$Sleep = NULL
 # n = 29 kids at 17 - 19months -- this sample repeats with the CONTX sample, 
 # but the kids are younger. also, we have a couple of kids where they were sampled on two different days and this changes their age e.g., from 17 to 18 months. 
 #summary(d4) # 502 NA fat_ed
@@ -70,8 +69,8 @@ d$language = as.factor(d$language)
 # adding third dataset - "the Stanford families" 27 18-month-olds, full-day recording
 d3 <- read.csv(here("data/data_SOT_Stanford_withNAPS_210307.csv"), header=T, stringsAsFactors = F) %>%
   mutate(language="english",
-         Dataset = "SOT Outreach")
-d3$Sleep = NULL
+         Dataset = "SOT Outreach") %>%
+  dplyr::select(-mom_ed, -fat_ed, -hi, -Sleep)
 intersect(names(d3), names(d)) # SOT is already coded in the same way
 setdiff(names(d3), names(d)) # time, mom_ed
 setdiff(names(d), names(d3)) # language

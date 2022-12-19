@@ -91,7 +91,6 @@ num_obs %>%
 
 
 # Figure 2: Boxplots of AWC, CTC, or CVC
-In BUCLD descriptive plots, we took out splits and sleep, but the model treated splits as ODS. Therefore, for the final paper we decided to treat splits as sleep in the plots as well.
 ```{r}
 data2 <- data %>% 
   rename("cds_ods" = "cds_ohs") %>% 

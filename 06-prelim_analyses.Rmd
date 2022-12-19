@@ -105,7 +105,7 @@ awc_2categories <- ggplot(data2, aes(cds_ods2, AWC, fill = cds_ods2)) +
   theme(text = element_text(size = 20), 
         axis.title.y=element_text(angle=0, vjust = .5)) + 
   labs(x = "", y = "AWC \n(5-min)\nsegments") +  
-  scale_fill_manual(values = c("#F8766D", "#00BFC4")) + 
+  scale_fill_manual(values = c("#00BFC4", "#F8766D")) + 
   theme(legend.position = "none") 
 
 awc_2categories
@@ -119,7 +119,7 @@ ctc_2categories <- ggplot(data2, aes(cds_ods2, CTC, fill = cds_ods2)) +
   theme(text = element_text(size = 20), 
         axis.title.y=element_text(angle=0, vjust = .5)) + 
   labs(x = "", y = "CTC \n(5-min\nsegments)") +  
-  scale_fill_manual(values = c("#F8766D","#00BFC4")) + 
+  scale_fill_manual(values = c("#00BFC4", "#F8766D")) + 
   theme(legend.position = "none") 
 
 ctc_2categories
@@ -133,7 +133,7 @@ cvc_2categories <- ggplot(data2, aes(cds_ods2, CVC, fill = cds_ods2)) +
   theme(text = element_text(size = 20), 
         axis.title.y=element_text(angle=0, vjust = .5)) + 
   labs(x = "", y = "CVC \n(5-min\nsegments)") +  
-  scale_fill_manual(values = c("#F8766D", "#00BFC4")) + 
+  scale_fill_manual(values = c("#00BFC4", "#F8766D")) + 
   theme(legend.position = "none") 
 
 cvc_2categories

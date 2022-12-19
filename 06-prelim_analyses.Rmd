@@ -150,6 +150,7 @@ dev.off() # closes file
 # Predicting CDS or not from AWC and CTC values - standardizing within participant
 ```{r}
 # standardizing individual observations within participant: this ensures that everyone's value is the same relative distance from their own mean
+# treats all splits as ODS
 data_log <- data2 %>% 
   mutate(cds_ods3 = ifelse(cds_ods == 1, 1, 0)) %>% 
   group_by(id) %>%

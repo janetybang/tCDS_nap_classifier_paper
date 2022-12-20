@@ -4,7 +4,7 @@ d <- read.csv(here("data/data_WF_withNAPS_210307.csv"), header=T, stringsAsFacto
   mutate(Dataset = "WF", # Weisleder & Fernald (2013)
          language = "spanish", # 29 Spanish-speaking families
          Sleep = NULL) %>% 
-  dplyr::select(-mom_ed, -fat_ed, -hi, -hour, -minutes, -minutes_prop, -time2)
+  dplyr::select(-mom_ed, -hour, -minutes, -minutes_prop, -time2)
 
 #d2 <- read.csv(here("data/data_contx.csv"), header=T, stringsAsFactors=F) # 1279 10-min segments from 90 subjects
 # original CONTX: 1279 10-min segments
@@ -34,7 +34,7 @@ cor(d2$distant_5min, d2$distant_10min) # .933
 
 # let's sub in the 5-min segments in place of the 10-min segments
 d2 <- d25 %>% #filter(cds_ohs!="nap") %>% 
-  dplyr::select(-rectime, -X, -segment_num, -contx_inc, -hi, -fat_ed, -mom_ed) %>%
+  dplyr::select(-rectime, -X, -segment_num, -contx_inc, -mom_ed) %>%
   dplyr::select(-contains("_10min")) %>%
   rename(AWC = AWC_5min, CTC = CTC_5min, CVC = CVC_5min,
          noise_min = noise_5min, silence_min = silence_5min, distant_min = distant_5min,
@@ -52,7 +52,7 @@ table(d2$language)
 d4 <- read.csv(here("data/data_SOT_Outreach_withNAPS_210307.csv"), header=T, stringsAsFactors = F) %>%
   mutate(language="english",
          Dataset = "SOT Outreach") %>%
-  dplyr::select(-mom_ed, -fat_ed, -hi, -Sleep)
+  dplyr::select(-mom_ed, -Sleep)
 # n = 29 kids at 17 - 19months -- this sample repeats with the CONTX sample, 
 # but the kids are younger. also, we have a couple of kids where they were sampled on two different days and this changes their age e.g., from 17 to 18 months. 
 #summary(d4) # 502 NA fat_ed
@@ -70,7 +70,7 @@ d$language = as.factor(d$language)
 d3 <- read.csv(here("data/data_SOT_Stanford_withNAPS_210307.csv"), header=T, stringsAsFactors = F) %>%
   mutate(language="english",
          Dataset = "SOT Outreach") %>%
-  dplyr::select(-mom_ed, -fat_ed, -hi, -Sleep)
+  dplyr::select(-mom_ed, -Sleep)
 intersect(names(d3), names(d)) # SOT is already coded in the same way
 setdiff(names(d3), names(d)) # time, mom_ed
 setdiff(names(d), names(d3)) # language
